@@ -1,5 +1,5 @@
 from collections import defaultdict
-import ConfigParser
+import configparser
 from enum import Enum
 import operator
 
@@ -141,7 +141,7 @@ class DBHandler(object):
         t = self.tables[table]
         res = self.conn.execute(t.select(t.c.id == lookup_id)).fetchone()
         map = {}
-        for (k,v) in res.items():
+        for (k,v) in list(res.items()):
             if k not in exclude:
                 map[mapping.get(k, k)] = bool(v) if '_b' in k else v
         return (map, res)
@@ -152,7 +152,7 @@ class DBHandler(object):
         return [getter(r.id) for r in res]
 
     def get_struct_list(self):
-        k = self.struct_ids.keys()
+        k = list(self.struct_ids.keys())
         k.sort()
         return k
 
@@ -234,8 +234,8 @@ class DBHandler(object):
                                       3: ClubType.leos},
                  include_officers=False):
         (map, res) = self.__db_lookup(club_id, 'club', mapping, exclude)
-        map['meeting_address'] = [res['add%s' % i] for i in xrange(1,6) if res['add%s' % i]]
-        map['postal_address'] = [res['postal%s' % i] for i in xrange(1,6) if res['postal%s' % i]]
+        map['meeting_address'] = [res['add%s' % i] for i in range(1,6) if res['add%s' % i]]
+        map['postal_address'] = [res['postal%s' % i] for i in range(1,6) if res['postal%s' % i]]
         if res['po_code']:
             map['postal_address'].append(res['po_code'])
         map['club_type'] = club_type_mapping[res['type']]
@@ -433,7 +433,7 @@ class Data(object):
             
 def get_db_settings(fn='db_settings.ini', sec='DB'):
     settings = {}
-    cp = ConfigParser.SafeConfigParser()
+    cp = configparser.SafeConfigParser()
     with open(fn, 'r') as fh:
         cp.readfp(fh)
     for opt in cp.options(sec):

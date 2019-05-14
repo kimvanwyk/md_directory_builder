@@ -27,14 +27,14 @@ CLUB_IDS = {'North Durban': 27814,
        }
 
 sl = db_handler.get_struct_list()
-print sl
+print(sl)
 
 ### Tests for the data class
 
 data = db_handler.Data(2019, sl[2])
-print data.struct.name
+print(data.struct.name)
 while data.next_district():
-    print data.district.name
+    print(data.district.name)
 data.reset()
 
 offs = []
