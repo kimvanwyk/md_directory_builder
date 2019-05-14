@@ -32,31 +32,32 @@ print(sl)
 ### Tests for the data class
 
 data = db_handler.Data(2019, sl[2])
-print(data.struct.long_name)
-while data.next_district():
-    print(data.district.long_name)
-data.reset()
+if 0:
+    print(data.struct.long_name)
+    while data.next_district():
+        print(data.district.long_name)
+    data.reset()
 
-offs = []
-for off in data.struct.officers:
-    if 'Council Chairperson' == off.title:
-        offs.append(off)
-        break
-dgs = []
-vdgs = []
-while data.next_district():
-    for off in data.district.officers:
-        if off.title == 'District Governor':
-            dgs.append(off)
-        if off.title == 'First Vice District Governor':
-            vdgs.append(off)
-offs.extend(dgs)
-offs.extend(vdgs)
-for off in data.struct.officers:
-    if 'Council Chairperson' != off.title:
-        offs.append(off)
+    offs = []
+    for off in data.struct.officers:
+        if 'Council Chairperson' == off.title:
+            offs.append(off)
+            break
+    dgs = []
+    vdgs = []
+    while data.next_district():
+        for off in data.district.officers:
+            if off.title == 'District Governor':
+                dgs.append(off)
+            if off.title == 'First Vice District Governor':
+                vdgs.append(off)
+    offs.extend(dgs)
+    offs.extend(vdgs)
+    for off in data.struct.officers:
+        if 'Council Chairperson' != off.title:
+            offs.append(off)
 
-pprint([(o.title, o.member.long_name) for o in offs])
+    pprint([(o.title, o.member.long_name) for o in offs])
 
 
 # pprint([(o.title, o.member.long_name) for o in data.struct.officers])
@@ -75,9 +76,9 @@ pprint([(o.title, o.member.long_name) for o in offs])
 
 ### Tests for the db class
 
-# db = data.db
-# for (k,v) in MEMBER_IDS.items():
-#     print db.get_member(v)
+db = data.db
+for (k,v) in MEMBER_IDS.items():
+    print(k, db.get_member(v))
 
 # for (k,v) in CLUB_IDS.items():
 #     print db.get_club(v, include_officers=True)

@@ -214,9 +214,12 @@ class DBHandler(object):
         return title
 
     def get_member(self, member_id, mapping={'deceased_b': 'is_deceased', 'resigned_b': 'is_resigned',
-                                             'partner_lion_b': 'is_partner_lion', 'club_id': 'club'},
+                                             'partner_lion_b': 'is_partner_lion'},
+                   exclude = ('club_id',),
                    email=None):
-        (map, res) = self.__db_lookup(member_id, 'member', mapping)
+        (map, res) = self.__db_lookup(member_id, 'member', mapping, exclude)
+        if res['club_id']:
+            map['club'] = self.get_club(res['club_id'])
         map['title'] = self.get_title(member_id)
         if email:
             map['email'] = email
@@ -259,19 +262,20 @@ class DBHandler(object):
         res = db.conn.execute(t.select(and_(t.c.club_id == club_id,
                                             t.c.year == self.year))).fetchone()
         if res:
-            map['zone'] = self.get_zone(res.zone_id)
+            map['zone'] = self.get_zone(res.zone_id, include_officers=include_officers)
         
         c = Club(**map)
         return c
 
-    def get_region(self, region_id, exclude=('struct_id',)):
+    def get_region(self, region_id, exclude=('struct_id',), include_officers=False):
         (map, res) = self.__db_lookup(region_id, 'region', {}, exclude)
-        map['district'] = self.get_struct(res['struct_id'])
-        t = self.tables['regionchair']
-        res = db.conn.execute(t.select(and_(t.c.parent_id == res['id'],
-                                            t.c.year == self.year))).fetchone()
-        if res:
-            map['chair'] = self.get_member(res['member_id'], email=res['email'])
+        map['district'] = self.get_struct(res['struct_id'], include_officers=include_officers)
+        if include_officers:
+            t = self.tables['regionchair']
+            res = db.conn.execute(t.select(and_(t.c.parent_id == res['id'],
+                                                t.c.year == self.year))).fetchone()
+            if res:
+                map['chair'] = self.get_member(res['member_id'], email=res['email'])
         r = Region(**map)
         return r
 
@@ -281,16 +285,18 @@ class DBHandler(object):
                                             t.c.in_region_b == 1)).order_by(t.c.name)).fetchall()
         return [self.get_zone(r.id) for r in res]
 
-    def get_zone(self, zone_id, exclude=('struct_id', 'in_region_b', 'region_id')):
+    def get_zone(self, zone_id, exclude=('struct_id', 'in_region_b', 'region_id'),
+                 include_officers=False):
         (map, res) = self.__db_lookup(zone_id, 'zone', {}, exclude)
-        map['district'] = self.get_struct(res['struct_id'])
+        map['district'] = self.get_struct(res['struct_id'], include_officers=include_officers)
         if res['in_region_b']:
-            map['region'] = self.get_region(res['region_id'])
-        t = self.tables['zonechair']
-        res = db.conn.execute(t.select(and_(t.c.parent_id == res['id'],
-                                            t.c.year == self.year))).fetchone()
-        if res:
-            map['chair'] = self.get_member(res['member_id'], email=res['email'])
+            map['region'] = self.get_region(res['region_id'], include_officers=include_officers)
+        if include_officers:
+            t = self.tables['zonechair']
+            res = db.conn.execute(t.select(and_(t.c.parent_id == res['id'],
+                                                t.c.year == self.year))).fetchone()
+            if res:
+                map['chair'] = self.get_member(res['member_id'], email=res['email'])
         z = Zone(**map)
         return z
 
