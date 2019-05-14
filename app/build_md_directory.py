@@ -27,15 +27,21 @@ def get_md_officers():
 
 def output_member(member):
     out.append(f"{member.long_name} \\")
-    if off.member.cell_ph:
+    if member.cell_ph:
         out.append(f"**Cell:** {member.cell_ph} \\")
-    if off.member.email:
+    if member.email:
         out.append(f"**Email:** <{member.email}> \\")
-    if off.member.club:
+    if member.club:
         out.append(f"**Home Club:** {member.club.name} \\")
 
 def output_officer(off):
     out.append(f"### {off.title}")
+    output_member(off.member)
+    out.append('\\ \\ ')
+    out.append('')
+
+def output_past_officer(off):
+    out.append(f"### {off.year}")
     output_member(off.member)
     out.append('\\ \\ ')
     out.append('')
@@ -53,6 +59,14 @@ out.extend(['', '\End{multicols}', ''])
 out.append('## Website')
 out.append(f"<{data.struct.website}>")
 out.append('')
+
+out.append('## Past Council Chairpersons')
+out.append('')
+out.extend(['\Begin{multicols}{2}', '\setlength{\columnseprule}{0.4pt}', ''])
+out.append('')
+for po in data.get_past_ccs():
+    output_past_officer(po)
+out.extend(['', '\End{multicols}', ''])
 
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(out))
