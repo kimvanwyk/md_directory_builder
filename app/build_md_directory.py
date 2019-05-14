@@ -25,15 +25,18 @@ def get_md_officers():
             offs.append(off)
     return offs
 
+def output_member(member):
+    out.append(f"{member.long_name} \\")
+    if off.member.cell_ph:
+        out.append(f"**Cell:** {member.cell_ph} \\")
+    if off.member.email:
+        out.append(f"**Email:** <{member.email}> \\")
+    if off.member.club:
+        out.append(f"**Home Club:** {member.club.name} \\")
+
 def output_officer(off):
     out.append(f"### {off.title}")
-    out.append(f"{off.member.long_name} \\")
-    if off.member.cell_ph:
-        out.append(f"**Cell:** {off.member.cell_ph} \\")
-    if off.member.email:
-        out.append(f"**Email:** <{off.member.email}> \\")
-    if off.member.club:
-        out.append(f"**Home Club:** {off.member.club.name} \\")
+    output_member(off.member)
     out.append('\\ \\ ')
     out.append('')
 
