@@ -32,9 +32,9 @@ print(sl)
 ### Tests for the data class
 
 data = db_handler.Data(2019, sl[2])
-print(data.struct.name)
+print(data.struct.long_name)
 while data.next_district():
-    print(data.district.name)
+    print(data.district.long_name)
 data.reset()
 
 offs = []

@@ -25,11 +25,15 @@ class MultipleDistrict(object):
     is_in_use = attr.ib(default=False)
     officers = attr.ib(factory=list)
 
+    def __attrs_post_init__(self):
+        self.long_name = f"Multiple Distict {self.name}"
+
 @attr.s
 class District(MultipleDistrict):
     parent = attr.ib(default=None) 
     def __attrs_post_init__(self):
         self.name = "%s%s" % (self.parent.name if self.parent else '', self.name)
+        self.long_name = f"Distict {self.name}"
 
 @attr.s
 class Region(object):
