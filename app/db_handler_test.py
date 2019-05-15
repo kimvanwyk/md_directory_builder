@@ -27,12 +27,11 @@ CLUB_IDS = {'North Durban': 27814,
        }
 
 sl = db_handler.get_struct_list()
-print(sl)
 
 ### Tests for the data class
 
 data = db_handler.Data(2019, sl[2])
-if 0:
+if 1:
     print(data.struct.long_name)
     while data.next_district():
         print(data.district.long_name)
@@ -59,6 +58,7 @@ if 0:
 
     pprint([(o.title, o.member.long_name) for o in offs])
 
+    pprint(data.get_brightsight_offices())
 
 # pprint([(o.title, o.member.long_name) for o in data.struct.officers])
 # while data.next_district():
@@ -76,9 +76,9 @@ if 0:
 
 ### Tests for the db class
 
-db = data.db
-for (k,v) in MEMBER_IDS.items():
-    print(k, db.get_member(v))
+# db = data.db
+# for (k,v) in MEMBER_IDS.items():
+#     print(k, db.get_member(v))
 
 # for (k,v) in CLUB_IDS.items():
 #     print db.get_club(v, include_officers=True)

@@ -36,6 +36,25 @@ class District(MultipleDistrict):
         self.long_name = f"Distict {self.name}"
 
 @attr.s
+class BrightsightOffice(object):
+    id = attr.ib(factory=int)
+    struct = attr.ib(default=None)
+    physical_address = attr.ib(factory=list)
+    postal_address = attr.ib(factory=list)
+    ph = attr.ib(default=None)
+    fax = attr.ib(default=None)
+    email = attr.ib(default=None)
+    website = attr.ib(default=None)
+    contact_person = attr.ib(default=None)
+    manager = attr.ib(default=None)
+
+@attr.s
+class BrightsightOfficeManager(object):
+    name = attr.ib(default=None)
+    ph = attr.ib(default=None)
+    email = attr.ib(default=None)
+
+@attr.s
 class Region(object):
     id = attr.ib(factory=int)
     name = attr.ib(default=None) 
@@ -141,9 +160,9 @@ class DBHandler(object):
             s = self.get_struct(r.id)
             self.struct_ids[s.name] = r.id
 
-    def __db_lookup(self, lookup_id, table, mapping, exclude=[]):
+    def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field='id'):
         t = self.tables[table]
-        res = self.conn.execute(t.select(t.c.id == lookup_id)).fetchone()
+        res = self.conn.execute(t.select(getattr(t.c, lookup_field) == lookup_id)).fetchone()
         map = {}
         for (k,v) in list(res.items()):
             if k not in exclude:
@@ -339,6 +358,19 @@ class DBHandler(object):
         s = cls(**map)
         return s
 
+    def get_brightsight_offices(self, struct_id, mapping={'tel': 'ph'}, 
+                                exclude=('struct_id', 'manager', 'manager_email', 'manager_cell_ph',
+                                         'add1', 'add2', 'add3', 'add4', 'add5', 'po_code', 'postal', 
+                                         'postal1', 'postal2', 'postal3', 'postal4', 'postal5')):
+        (map, res) = self.__db_lookup(struct_id, 'brightsightoffice', mapping, exclude, lookup_field='struct_id')
+        map['physical_address'] = [res['add%s' % i] for i in range(1,6) if res['add%s' % i]]
+        map['postal_address'] = [res['postal%s' % i] for i in range(1,6) if res['postal%s' % i]]
+        if res['po_code']:
+            map['postal_address'].append(res['po_code'])
+        map['manager'] = BrightsightOfficeManager(res['manager'], res['manager_cell_ph'], res['manager_email'])
+        map['struct'] = self.get_struct(struct_id)
+        return BrightsightOffice(**map)
+
     def get_md_districts(self, struct_id, include_officers=False):
         t = self.tables['struct']
         return [self.get_struct(r.id, include_officers=include_officers) for r in db.conn.execute(t.select(and_(t.c.parent_id == struct_id, 
@@ -389,6 +421,7 @@ class DBHandler(object):
     def get_past_dgs(self, struct_id):
         return self.get_past_struct_officers(struct_id, 5)
 
+
 class Data(object):
     def __init__(self, year, struct):
         self.db = db
@@ -420,6 +453,9 @@ class Data(object):
 
     def get_past_ccs(self):
         return self.db.get_past_ccs(self.struct_id)
+
+    def get_brightsight_offices(self):
+        return self.db.get_brightsight_offices(self.struct_id)
 
     def get_past_dgs(self):
         if self.district:

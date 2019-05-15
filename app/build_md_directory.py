@@ -55,7 +55,7 @@ def output_past_officer(off):
 
 data = db_handler.Data(2019, '410')
  
-out = ["---", "toc: true", "---", " ", f"# {data.struct.long_name}", '', '## Multiple District Council', '',
+out = [f"# {data.struct.long_name}", '', '## Multiple District Council', '',
        '\Begin{multicols}{2}', '\setlength{\columnseprule}{0.4pt}', '']
 
 for off in get_md_officers():
@@ -66,6 +66,44 @@ out.extend(['', '\End{multicols}', ''])
 out.append('## Website')
 out.append(f"<{data.struct.website}>")
 out.append('')
+
+bso = data.get_brightsight_offices()
+if bso:
+    out.append('## Lions Brightsight Office')
+    out.append('')
+    out.append('### Contact Details')
+    out.append('')
+    out.append('|||')
+    out.append('|----:|:----|')
+    out.append(f'|Contact Person|{bso.contact_person}|')
+    if bso.physical_address:
+        out.append(f'|Physical Address|{bso.physical_address[0]}|')
+        for pa in bso.physical_address[1:]:
+            out.append(f'||{pa}|')
+    if bso.postal_address:
+        out.append(f'|Postal Address|{bso.postal_address[0]}|')
+        for pa in bso.postal_address[1:]:
+            out.append(f'||{pa}|')
+    if bso.ph:
+        out.append(f'|Telephone|{bso.ph}|')
+    if bso.email:
+        out.append(f'|Email|<{bso.email}>|')
+    if bso.website:
+        out.append(f'|Website|<{bso.website}>|')
+    out.append('')
+
+    if bso.manager:
+        out.append('### Manager')
+        out.append('')
+        out.append('|||')
+        out.append('|----:|:----|')
+        out.append(f'|Manager|{bso.manager.name}|')
+        if bso.manager.ph:
+            out.append(f'|Phone|{bso.manager.ph}|')
+        if bso.manager.email:
+            out.append(f'|Email|<{bso.manager.email}>|')
+        out.append('')
+
 
 out.append('## Past Council Chairpersons')
 out.append('')
