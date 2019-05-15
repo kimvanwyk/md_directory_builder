@@ -27,6 +27,12 @@ def get_md_officers():
 
 def output_member(member):
     out.append(f"{member.long_name} \\")
+    if member.is_resigned:
+        out.append(f"**Resigned** \\")
+        return
+    if member.is_deceased:
+        out.append(f"**Called to Higher Service** \\")
+        return
     if member.cell_ph:
         out.append(f"**Cell:** {member.cell_ph} \\")
     if member.email:
