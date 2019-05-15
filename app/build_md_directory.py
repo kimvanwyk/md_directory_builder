@@ -47,14 +47,15 @@ def output_officer(off):
     out.append('')
 
 def output_past_officer(off):
-    out.append(f"### {off.year}")
+    year = f"{off.year-1}/{off.year}"
+    out.append(f"### {year} {{-}}")
     output_member(off.member)
     out.append('\\ \\ ')
     out.append('')
 
 data = db_handler.Data(2019, '410')
-
-out = [f"# {data.struct.long_name}", '', '## Multiple District Council', '',
+ 
+out = ["---", "toc: true", "---", " ", f"# {data.struct.long_name}", '', '## Multiple District Council', '',
        '\Begin{multicols}{2}', '\setlength{\columnseprule}{0.4pt}', '']
 
 for off in get_md_officers():
