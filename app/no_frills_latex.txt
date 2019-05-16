@@ -65,6 +65,16 @@ $endif$
 
 \newcolumntype{C}{>{\centering\arraybackslash}X}
 
+$if(toc)$
+{
+$if(colorlinks)$
+\hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$black$endif$}
+$endif$
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+}
+$endif$
+
 $body$
 
 \end{document}
