@@ -17,15 +17,20 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
     client.containers.run(IMAGE_NAME, command=f'-s -o {tex_file} --template={template} {file_in}',
                           volumes=volumes, auto_remove=True, stdin_open=True, stream=True, tty=True)
 
+    out = []
     with open(tex_file, 'r') as fh:
-        text = fh.read()
-    text = text.replace('\\begin{longtable}[c]', '\\begin{longtable}[l]')
-    text = text.replace('\\toprule', '')
-    text = text.replace('\\bottomrule', '')
+        for l in fh:
+            if "\\addcontentsline{toc}" in l:
+                continue
+            for (src, rep) in (('\\begin{longtable}[c]', '\\begin{longtable}[l]'),
+                               ('\\toprule', ''),
+                               ('\\bottomrule', '')):
+                l = l.replace(src, rep)
+            out.append(l)
 
     tex_file_mod = f"{fn}.tex"
     with open(tex_file_mod, 'w') as fh:
-        fh.write(text)
+        fh.write(''.join(out))
 
     client.containers.run(IMAGE_NAME, command=f'{tex_file_mod}', entrypoint='pdflatex',
                           volumes=volumes, auto_remove=True, stdin_open=True, stream=True, tty=True)
