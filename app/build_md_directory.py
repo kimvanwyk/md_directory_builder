@@ -75,21 +75,21 @@ if bso:
     out.append('')
     out.append('|||')
     out.append('|----:|:----|')
-    out.append(f'|Contact Person|{bso.contact_person}|')
+    out.append(f'|Contact Person:|{bso.contact_person}|')
     if bso.physical_address:
-        out.append(f'|Physical Address|{bso.physical_address[0]}|')
+        out.append(f'|Physical Address:|{bso.physical_address[0]}|')
         for pa in bso.physical_address[1:]:
             out.append(f'||{pa}|')
     if bso.postal_address:
-        out.append(f'|Postal Address|{bso.postal_address[0]}|')
+        out.append(f'|Postal Address:|{bso.postal_address[0]}|')
         for pa in bso.postal_address[1:]:
             out.append(f'||{pa}|')
     if bso.ph:
-        out.append(f'|Telephone|{bso.ph}|')
+        out.append(f'|Telephone:|{bso.ph}|')
     if bso.email:
-        out.append(f'|Email|<{bso.email}>|')
+        out.append(f'|Email:|<{bso.email}>|')
     if bso.website:
-        out.append(f'|Website|<{bso.website}>|')
+        out.append(f'|Website:|<{bso.website}>|')
     out.append('')
 
     if bso.manager:
@@ -97,11 +97,11 @@ if bso:
         out.append('')
         out.append('|||')
         out.append('|----:|:----|')
-        out.append(f'|Manager|{bso.manager.name}|')
+        out.append(f'|Manager:|{bso.manager.name}|')
         if bso.manager.ph:
-            out.append(f'|Phone|{bso.manager.ph}|')
+            out.append(f'|Phone:|{bso.manager.ph}|')
         if bso.manager.email:
-            out.append(f'|Email|<{bso.manager.email}>|')
+            out.append(f'|Email:|<{bso.manager.email}>|')
         out.append('')
 
 
