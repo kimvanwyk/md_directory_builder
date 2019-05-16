@@ -56,12 +56,12 @@ def output_past_officer(off):
 data = db_handler.Data(2019, '410')
  
 out = [f"# {data.struct.long_name}", '', '## Multiple District Council', '',
-       '\Begin{multicols}{2}', '\setlength{\columnseprule}{0.4pt}', '']
+       '\\Begin{multicols}{2}', '\\setlength{\\columnseprule}{0.4pt}', '']
 
 for off in get_md_officers():
     output_officer(off)
 
-out.extend(['', '\End{multicols}', ''])
+out.extend(['', '\\End{multicols}', ''])
 
 out.append('## Website')
 out.append(f"<{data.struct.website}>")
@@ -107,11 +107,11 @@ if bso:
 
 out.append('## Past Council Chairpersons')
 out.append('')
-out.extend(['\Begin{multicols}{2}', '\setlength{\columnseprule}{0.4pt}', ''])
+out.extend(['\\Begin{multicols}{2}', '\\setlength{\\columnseprule}{0.4pt}', ''])
 out.append('')
 for po in data.get_past_ccs():
     output_past_officer(po)
-out.extend(['', '\End{multicols}', ''])
+out.extend(['', '\\End{multicols}', ''])
 
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(out))
