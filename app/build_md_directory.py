@@ -43,14 +43,14 @@ def output_member(member):
 def output_officer(off):
     out.append(f"### {off.title}")
     output_member(off.member)
-    out.append('\\ \\ ')
+    out.append('\\ ')
     out.append('')
 
 def output_past_officer(off):
     year = f"{off.year-1}/{off.year}"
     out.append(f"### {year} {{-}}")
     output_member(off.member)
-    out.append('\\ \\ ')
+    out.append('\\ ')
     out.append('')
 
 data = db_handler.Data(2019, '410')
