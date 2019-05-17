@@ -39,5 +39,8 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
     client.containers.run(IMAGE_NAME, command=f'{tex_file_mod}', entrypoint='pdflatex',
                           volumes=volumes, auto_remove=True, stdin_open=True, stream=True, tty=True)
 
+    client.containers.run(IMAGE_NAME, command=f'{tex_file_mod}', entrypoint='pdflatex',
+                          volumes=volumes, auto_remove=True, stdin_open=True, stream=True, tty=True)
+
 if __name__ == '__main__':
     build_pdf("output.txt")

@@ -1,6 +1,7 @@
 import filter_and_build
 
 import copy
+import itertools
 
 import db_handler
 
@@ -33,20 +34,39 @@ class Output(object):
     def __init__(self):
         self.out = []
 
-    def output_member(self, member):
-        self.out.append(f"{member.long_name} \\")
+    def newpage(self):
+        self.out.append(r'\newpage')
+        
+    def blank(self):
+        self.out.append('')
+        
+    def vacant(self):
+        self.out.extend(['Position Vacant', ''])
+        
+    def get_member_rows(self, member, trail=True):
+        if trail:
+            t = ' \\'
+        else:
+            t = ''
+        out = []
+        out.append(f"{member.long_name}{t}")
         if member.is_deceased:
-            self.out.append(f"**Called to Higher Service** \\")
-            return
+            out.append(f"**Called to Higher Service**{t}")
+            return out
         if member.is_resigned:
-            self.out.append(f"**Resigned** \\")
-            return
+            out.append(f"**Resigned**{t}")
+            return out
         if member.cell_ph:
-            self.out.append(f"**Cell:** {member.cell_ph} \\")
+            out.append(f"**Cell:** {member.cell_ph}{t}")
         if member.email:
-            self.out.append(f"**Email:** <{member.email}> \\")
+            out.append(f"**Email:** <{member.email}>{t}")
         if member.club:
-            self.out.append(f"**Home Club:** {member.club.name} \\")
+            out.append(f"**Home Club:** {member.club.name}{t}")
+        return out
+
+    def output_member(self, member):
+        if member:
+            self.out.extend(self.get_member_rows(member))
 
     def output_officer(self, off):
         self.out.append(f"### {off.title}")
@@ -61,17 +81,33 @@ class Output(object):
         self.out.append('\\ ')
         self.out.append('')
 
+    def output_zone(self, clubs, chair):
+        if not chair:
+            chair = ['Position Vacant']
+        chair_rows = self.get_member_rows(chair, trail=False)
+        self.out.append('|Clubs|Zone Chair|')
+        self.out.append('|----:|:----|')
+        for (club,cr) in itertools.zip_longest(clubs, chair_rows):
+            self.out.append(f'|{club}|{cr}|')
+        self.out.append('')
+
     def start_multicols(self):
         self.out.extend(['\\Begin{multicols}{2}', '\\setlength{\\columnseprule}{0.4pt}', ''])
 
     def end_multicols(self):
         self.out.extend(['', '\\End{multicols}', ''])
 
-    def output_md_preamble(self, md): 
-        self.out.extend([f"# {md.long_name}", ''])
+    def output_struct_preamble(self, struct): 
+        self.out.extend([f"# {struct.long_name}", ''])
         
-    def output_md_council_header(self):
-        self.out.extend([f"## Multiple District Council", ''])
+    def output_subtitle(self, title):
+        self.out.extend([f"## {title}", ''])
+
+    def output_subsubtitle(self, title):
+        self.out.extend([f"### {title}", ''])
+
+    def output_subsubsubtitle(self, title):
+        self.out.extend([f"#### {title}", ''])
 
     def output_md_past_council_chairs_header(self):
         self.out.extend([f"## Past Council Chairpersons", ''])
@@ -119,8 +155,8 @@ class Output(object):
         
 data = db_handler.Data(2019, '410')
 output = Output()
-output.output_md_preamble(data.struct)
-output.output_md_council_header()
+output.output_struct_preamble(data.struct)
+output.output_subtitle("Multiple District Council")
 output.start_multicols()
 for off in get_md_officers():
     output.output_officer(off)
@@ -129,11 +165,46 @@ output.output_website(data.struct.website)
 bso = data.get_brightsight_offices()
 if bso:
     output.output_brightsight_office(bso)
-output.output_md_past_council_chairs_header()
+output.output_subtitle("District Cabinet")
 output.start_multicols()
 for po in data.get_past_ccs():
     output.output_past_officer(po)
 output.end_multicols()
+
+data.reset()
+while data.next_district():
+    output.newpage()
+    output.output_struct_preamble(data.district)
+    output.start_multicols()
+    for off in data.district.officers:
+        output.output_officer(off)
+    output.end_multicols()
+    if data.district.website:
+        output.output_website(data.district.website)
+    if data.zones:
+        output.output_subtitle("Zones")
+        while data.next_zone():
+            output.output_subsubtitle(data.zone.name)
+            clubs = data.get_zone_clubs(include_officers=False)
+            if clubs or data.zone.chair:
+                output.output_zone(clubs, data.zone.chair)
+
+            # output.start_multicols()
+            # if clubs:
+            #     output.output_subsubsubtitle('Clubs')
+            #     output.out.extend([f"* {c.name}" for c in clubs])
+            # output.blank()
+            # output.out.extend(['', r'\vfill\null', r'\columnbreak', ''])
+            # if data.zone.chair:
+            #     output.output_subsubsubtitle('Zone Chair')
+            #     output.blank()
+            #     output.output_member(data.zone.chair)
+            # else:
+            #     output.vacant()
+            # output.end_multicols()
+            # output.blank()
+            # output.blank()
+    data.reset_district()
 
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(output.out))

@@ -60,10 +60,14 @@ class Region(object):
     name = attr.ib(default=None) 
     chair = attr.ib(default=None) 
     district = attr.ib(default=None)
+    def __attrs_post_init__(self):
+        self.long_name = f"Region {self.name}"
 
 @attr.s
 class Zone(Region):
     region = attr.ib(default=None)
+    def __attrs_post_init__(self):
+        self.long_name = f"Zone {self.name}"
 
 @attr.s
 class Club(object):
@@ -169,10 +173,10 @@ class DBHandler(object):
                 map[mapping.get(k, k)] = bool(v) if '_b' in k else v
         return (map, res)
 
-    def __get_district_child(self, struct_id, table, order_field, getter):
+    def __get_district_child(self, struct_id, table, order_field, getter, kwds={}):
         t = self.tables[table]
         res = db.conn.execute(t.select(t.c.struct_id == struct_id).order_by(getattr(t.c, order_field))).fetchall()
-        return [getter(r.id) for r in res]
+        return [getter(r.id, **kwds) for r in res]
 
     def get_struct_list(self):
         k = list(self.struct_ids.keys())
@@ -319,11 +323,11 @@ class DBHandler(object):
         z = Zone(**map)
         return z
 
-    def get_zone_clubs(self, zone_id):
+    def get_zone_clubs(self, zone_id, include_officers=False):
         t = self.tables['clubzone']
         res = db.conn.execute(t.select(and_(t.c.zone_id == zone_id,
                                             t.c.year == self.year))).fetchall()
-        clubs = [self.get_club(r.club_id) for r in res]
+        clubs = [self.get_club(r.club_id, include_officers=include_officers) for r in res]
         clubs.sort(key=lambda x:x.name)
         return clubs
 
@@ -382,8 +386,8 @@ class DBHandler(object):
     def get_district_regions(self, struct_id):
         return self.__get_district_child(struct_id, 'region', 'id', self.get_region)
 
-    def get_district_zones(self, struct_id):
-        return self.__get_district_child(struct_id, 'zone', 'id', self.get_zone)
+    def get_district_zones(self, struct_id, include_officers=False):
+        return self.__get_district_child(struct_id, 'zone', 'id', self.get_zone, {'include_officers':include_officers})
 
     def get_past_struct_officers(self, struct_id, office_id, cls_map={11: PastOfficer, 5: PastDG}):
         to = self.tables['structofficer']
@@ -429,6 +433,7 @@ class Data(object):
         self.db.year = year
         self.struct = self.db.get_struct(self.struct_id, include_officers=True)
         self.__district_index = -1
+        self.__zone_index = -1
         if type(self.struct) == MultipleDistrict:
             self.md = True
             self.districts = self.db.get_md_districts(self.struct_id, include_officers=True)
@@ -437,19 +442,36 @@ class Data(object):
             self.md = False
             self.districts = []
             self.district = self.struct
+            self.zones = []
 
     def next_district(self):
         if self.md:
             self.__district_index += 1
             if self.__district_index >= len(self.districts):
+                self.district = False
                 return False
             self.district = self.districts[self.__district_index]
+            self.zones = self.db.get_district_zones(self.district.id, include_officers=True)
+        return True
+        
+    def next_zone(self):
+        if self.district:
+            self.__zone_index += 1
+            if self.__zone_index >= len(self.zones):
+                self.zone = False
+                return False
+            self.zone = self.zones[self.__zone_index]
         return True
         
     def reset(self):
         if self.md:
             self.district = None
             self.__district_index = -1
+
+    def reset_district(self):
+        if self.district:
+            self.zone = None
+            self.__zone_index = -1
 
     def get_past_ccs(self):
         return self.db.get_past_ccs(self.struct_id)
@@ -472,9 +494,10 @@ class Data(object):
             return self.db.get_district_regions(self.district.id)
         return [] 
 
-    def get_district_zones(self):
-        if self.district:
-            return self.db.get_district_zones(self.district.id)
+    def get_zone_clubs(self, include_officers=False):
+        if self.zone:
+            clubs = self.db.get_zone_clubs(self.zone.id, include_officers=include_officers)
+            return clubs
         return []
             
 def get_db_settings(fn='db_settings.ini', sec='DB'):
