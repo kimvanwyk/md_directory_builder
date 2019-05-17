@@ -29,10 +29,8 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
                            (r'\\' + '\n\n', '\n\n')):
             text = text.replace(pat, rep)
 
-        # ('(section\{.*?)\n\n', '\1\n'),
         for (pat, rep) in ((r'\\addcontentsline.*?' + '\n', ''),):
             (text, count) = re.subn(pat, rep, text)
-        print(count)
 
     tex_file_mod = f"{fn}.tex"
     with open(tex_file_mod, 'w') as fh:
@@ -41,4 +39,5 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
     client.containers.run(IMAGE_NAME, command=f'{tex_file_mod}', entrypoint='pdflatex',
                           volumes=volumes, auto_remove=True, stdin_open=True, stream=True, tty=True)
 
-build_pdf("output.txt")
+if __name__ == '__main__':
+    build_pdf("output.txt")

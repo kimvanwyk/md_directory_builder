@@ -1,3 +1,5 @@
+import filter_and_build
+
 import copy
 
 import db_handler
@@ -116,6 +118,4 @@ out.extend(['', '\\End{multicols}', ''])
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(out))
     
-
-
-
+filter_and_build.build_pdf('output.txt')
