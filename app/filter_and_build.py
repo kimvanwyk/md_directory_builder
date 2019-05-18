@@ -24,6 +24,7 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
         text = fh.read()
         for (pat, rep) in ((r'\begin{longtable}[c]', r'\begin{longtable}[l]'),
                            ('\\toprule\n', ''),
+                           ('xxSI', 'Served In'),
                            ('\\bottomrule\n', ''),
                            ('\\hspace*{0.333em}\n',''),
                            (r'\strut\end{minipage}',''),

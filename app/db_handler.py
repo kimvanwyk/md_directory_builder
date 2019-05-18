@@ -167,9 +167,10 @@ class DBHandler(object):
         t = self.tables[table]
         res = self.conn.execute(t.select(getattr(t.c, lookup_field) == lookup_id)).fetchone()
         map = {}
-        for (k,v) in list(res.items()):
-            if k not in exclude:
-                map[mapping.get(k, k)] = bool(v) if '_b' in k else v
+        if res:
+            for (k,v) in list(res.items()):
+                if k not in exclude:
+                    map[mapping.get(k, k)] = bool(v) if '_b' in k else v
         return (map, res)
 
     def __get_district_child(self, struct_id, table, order_field, getter, kwds={}):
@@ -263,6 +264,8 @@ class DBHandler(object):
                                       3: ClubType.leos},
                  include_officers=False):
         (map, res) = self.__db_lookup(club_id, 'club', mapping, exclude)
+        if not res:
+            return None
         map['meeting_address'] = [res['add%s' % i] for i in range(1,6) if res['add%s' % i]]
         map['postal_address'] = [res['postal%s' % i] for i in range(1,6) if res['postal%s' % i]]
         if res['po_code']:

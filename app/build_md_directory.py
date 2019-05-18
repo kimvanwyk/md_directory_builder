@@ -132,6 +132,9 @@ class Output(object):
 
     def output_past_officer(self, off):
         year = f"{off.year-1}/{off.year}"
+        if hasattr(off, 'previous_district'):
+            if off.previous_district:
+                year = f"{year} (xxSI {off.previous_district.long_name})"
         self.out.append(f"### {year} {{-}}")
         self.output_member(off.member)
         self.out.append('\\ ')
@@ -254,6 +257,14 @@ while data.next_district():
         output.output_heading(2, "Clubs")
         for club in clubs:
             output.output_club(club)
+
+    past_dgs = data.get_past_dgs()
+    if past_dgs:
+        output.output_heading(2, "Past District Governors")
+        output.start_multicols()
+        for po in past_dgs:
+            output.output_past_officer(po)
+        output.end_multicols()
 
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(output.out))
