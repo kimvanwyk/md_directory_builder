@@ -83,11 +83,12 @@ class Output(object):
 
     def output_zone(self, clubs, chair):
         if not chair:
-            chair = ['Position Vacant']
-        chair_rows = self.get_member_rows(chair, trail=False)
+            chair_rows = ['Position Vacant']
+        else:
+            chair_rows = self.get_member_rows(chair, trail=False)
         self.out.append('|Clubs|Zone Chair|')
-        self.out.append('|----:|:----|')
-        for (club,cr) in itertools.zip_longest(clubs, chair_rows):
+        self.out.append('|:----|:----|')
+        for (club,cr) in itertools.zip_longest([c.name for c in clubs], chair_rows, fillvalue=''):
             self.out.append(f'|{club}|{cr}|')
         self.out.append('')
 
