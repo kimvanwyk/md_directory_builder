@@ -107,14 +107,8 @@ class Output(object):
     def output_struct_preamble(self, struct): 
         self.out.extend([f"# {struct.long_name}", ''])
         
-    def output_subtitle(self, title):
-        self.out.extend([f"## {title}", ''])
-
-    def output_subsubtitle(self, title):
-        self.out.extend([f"### {title}", ''])
-
-    def output_subsubsubtitle(self, title):
-        self.out.extend([f"#### {title}", ''])
+    def output_heading(self, level, heading):
+        self.out.extend([f"{'#' * level } {heading}", ''])
 
     def output_md_past_council_chairs_header(self):
         self.out.extend([f"## Past Council Chairpersons", ''])
@@ -163,7 +157,7 @@ class Output(object):
 data = db_handler.Data(2019, '410')
 output = Output()
 output.output_struct_preamble(data.struct)
-output.output_subtitle("Multiple District Council")
+output.output_heading(2, "Multiple District Council")
 output.start_multicols()
 for off in get_md_officers():
     output.output_officer(off)
@@ -172,16 +166,19 @@ output.output_website(data.struct.website)
 bso = data.get_brightsight_offices()
 if bso:
     output.output_brightsight_office(bso)
-output.output_subtitle("District Cabinet")
-output.start_multicols()
-for po in data.get_past_ccs():
-    output.output_past_officer(po)
-output.end_multicols()
+past_ccs = data.get_past_ccs()
+if past_ccs:
+    output.output_heading(2, "Past Council Chairs")
+    output.start_multicols()
+    for po in past_ccs:
+        output.output_past_officer(po)
+    output.end_multicols()
 
 data.reset()
 while data.next_district():
     output.newpage()
     output.output_struct_preamble(data.district)
+    output.output_heading(2, "District Cabinet")
     output.start_multicols()
     for off in data.district.officers:
         output.output_officer(off)
@@ -191,17 +188,17 @@ while data.next_district():
         output.output_website(data.district.website)
 
     if data.zones:
-        output.output_subtitle("Regions")
+        output.output_heading(2, "Regions")
         while data.next_region():
-            output.output_subsubtitle(data.region.name)
+            output.output_heading(3, data.region.name)
             zones = data.get_region_zones(include_officers=False)
             if zones or data.region.chair:
                 output.output_region(zones, data.region.chair)
 
     if data.zones:
-        output.output_subtitle("Zones")
+        output.output_heading(2, "Zones")
         while data.next_zone():
-            output.output_subsubtitle(data.zone.name)
+            output.output_heading(3, data.zone.name)
             clubs = data.get_zone_clubs(include_officers=False)
             if clubs or data.zone.chair:
                 output.output_zone(clubs, data.zone.chair)
