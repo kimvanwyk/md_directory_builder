@@ -34,6 +34,17 @@ class Output(object):
     def __init__(self):
         self.out = []
 
+    def __output_region_zone(self, children, chair, child_desc, chair_desc):
+        if not chair:
+            chair_rows = ['Position Vacant']
+        else:
+            chair_rows = self.get_member_rows(chair, trail=False)
+        self.out.append(f'|{child_desc}|{chair_desc}|')
+        self.out.append('|:----|:----|')
+        for (child,cr) in itertools.zip_longest([c.name for c in children], chair_rows, fillvalue=''):
+            self.out.append(f'|{child}|{cr}|')
+        self.out.append('')
+
     def newpage(self):
         self.out.append(r'\newpage')
         
@@ -81,16 +92,11 @@ class Output(object):
         self.out.append('\\ ')
         self.out.append('')
 
+    def output_region(self, clubs, chair):
+        self.__output_region_zone(clubs, chair, 'Zones',  'Region Chair')
+
     def output_zone(self, clubs, chair):
-        if not chair:
-            chair_rows = ['Position Vacant']
-        else:
-            chair_rows = self.get_member_rows(chair, trail=False)
-        self.out.append('|Clubs|Zone Chair|')
-        self.out.append('|:----|:----|')
-        for (club,cr) in itertools.zip_longest([c.name for c in clubs], chair_rows, fillvalue=''):
-            self.out.append(f'|{club}|{cr}|')
-        self.out.append('')
+        self.__output_region_zone(clubs, chair, 'Clubs', 'Zone Chair')
 
     def start_multicols(self):
         self.out.extend(['\\Begin{multicols}{2}', '\\setlength{\\columnseprule}{0.4pt}', ''])
@@ -180,8 +186,18 @@ while data.next_district():
     for off in data.district.officers:
         output.output_officer(off)
     output.end_multicols()
+
     if data.district.website:
         output.output_website(data.district.website)
+
+    if data.zones:
+        output.output_subtitle("Regions")
+        while data.next_region():
+            output.output_subsubtitle(data.region.name)
+            zones = data.get_region_zones(include_officers=False)
+            if zones or data.region.chair:
+                output.output_region(zones, data.region.chair)
+
     if data.zones:
         output.output_subtitle("Zones")
         while data.next_zone():
@@ -189,22 +205,6 @@ while data.next_district():
             clubs = data.get_zone_clubs(include_officers=False)
             if clubs or data.zone.chair:
                 output.output_zone(clubs, data.zone.chair)
-
-            # output.start_multicols()
-            # if clubs:
-            #     output.output_subsubsubtitle('Clubs')
-            #     output.out.extend([f"* {c.name}" for c in clubs])
-            # output.blank()
-            # output.out.extend(['', r'\vfill\null', r'\columnbreak', ''])
-            # if data.zone.chair:
-            #     output.output_subsubsubtitle('Zone Chair')
-            #     output.blank()
-            #     output.output_member(data.zone.chair)
-            # else:
-            #     output.vacant()
-            # output.end_multicols()
-            # output.blank()
-            # output.blank()
     data.reset_district()
 
 with open('output.txt', 'w') as fh:

@@ -302,11 +302,11 @@ class DBHandler(object):
         r = Region(**map)
         return r
 
-    def get_region_zones(self, region_id):
+    def get_region_zones(self, region_id, include_officers=False):
         t = self.tables['zone']
         res = db.conn.execute(t.select(and_(t.c.region_id == region_id,
                                             t.c.in_region_b == 1)).order_by(t.c.name)).fetchall()
-        return [self.get_zone(r.id) for r in res]
+        return [self.get_zone(r.id, include_officers=include_officers) for r in res]
 
     def get_zone(self, zone_id, exclude=('struct_id', 'in_region_b', 'region_id'),
                  include_officers=False):
@@ -383,8 +383,8 @@ class DBHandler(object):
     def get_district_clubs(self, struct_id):
         return self.__get_district_child(struct_id, 'club', 'name', self.get_club)
 
-    def get_district_regions(self, struct_id):
-        return self.__get_district_child(struct_id, 'region', 'id', self.get_region)
+    def get_district_regions(self, struct_id, include_officers=False):
+        return self.__get_district_child(struct_id, 'region', 'id', self.get_region, {'include_officers':include_officers})
 
     def get_district_zones(self, struct_id, include_officers=False):
         return self.__get_district_child(struct_id, 'zone', 'id', self.get_zone, {'include_officers':include_officers})
@@ -433,6 +433,7 @@ class Data(object):
         self.db.year = year
         self.struct = self.db.get_struct(self.struct_id, include_officers=True)
         self.__district_index = -1
+        self.__region_index = -1
         self.__zone_index = -1
         if type(self.struct) == MultipleDistrict:
             self.md = True
@@ -442,6 +443,7 @@ class Data(object):
             self.md = False
             self.districts = []
             self.district = self.struct
+            self.regions = []
             self.zones = []
 
     def next_district(self):
@@ -451,7 +453,17 @@ class Data(object):
                 self.district = False
                 return False
             self.district = self.districts[self.__district_index]
+            self.regions = self.db.get_district_regions(self.district.id, include_officers=True)
             self.zones = self.db.get_district_zones(self.district.id, include_officers=True)
+        return True
+        
+    def next_region(self):
+        if self.district:
+            self.__region_index += 1
+            if self.__region_index >= len(self.regions):
+                self.region = False
+                return False
+            self.region = self.regions[self.__region_index]
         return True
         
     def next_zone(self):
@@ -470,6 +482,8 @@ class Data(object):
 
     def reset_district(self):
         if self.district:
+            self.region = None
+            self.__region_index = -1
             self.zone = None
             self.__zone_index = -1
 
@@ -493,6 +507,12 @@ class Data(object):
         if self.district:
             return self.db.get_district_regions(self.district.id)
         return [] 
+
+    def get_region_zones(self, include_officers=False):
+        if self.region:
+            zones = self.db.get_region_zones(self.region.id, include_officers=include_officers)
+            return zones
+        return []
 
     def get_zone_clubs(self, include_officers=False):
         if self.zone:
