@@ -60,7 +60,10 @@ class Output(object):
         else:
             t = ''
         out = []
-        out.append(f"{member.long_name}{t}")
+        title = member.title
+        if not title:
+            title = "Lion"
+        out.append(f"{title} {member.long_name}{t}")
         if member.is_deceased:
             out.append(f"**Called to Higher Service**{t}")
             return out
