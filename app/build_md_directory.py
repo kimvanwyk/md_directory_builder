@@ -54,7 +54,7 @@ class Output(object):
     def vacant(self):
         self.out.extend(['Position Vacant', ''])
         
-    def get_member_rows(self, member, trail=True):
+    def get_member_rows(self, member, trail=True, include_homeclub=True):
         if trail:
             t = ' \\'
         else:
@@ -71,13 +71,58 @@ class Output(object):
             out.append(f"**Cell:** {member.cell_ph}{t}")
         if member.email:
             out.append(f"**Email:** <{member.email}>{t}")
-        if member.club:
+        if include_homeclub and member.club:
             out.append(f"**Home Club:** {member.club.name}{t}")
         return out
 
     def output_member(self, member):
         if member:
             self.out.extend(self.get_member_rows(member))
+
+    def output_club(self, club):
+        if club.name:
+            name = club.name
+            if club.club_type != db_handler.ClubType.lions:
+                parent = f"Club of {club.parent.name}" if club.parent else ''
+                name = f"{name} ({club.club_type.name.capitalize()} {parent})"
+            self.output_heading(3, name)
+            if club.charter_year:
+                title = 'Chartered' if club.club_type == db_handler.ClubType.lions else 'Established'
+                year = f"{title}: {club.charter_year}. "
+            else:
+                year = ''
+            if club.zone:
+                s = f"{year}Part of {club.zone.long_name}."
+            else:
+                s = ''
+            if s:
+                self.out.append(s)
+            officers = []
+            for off in club.officers:
+                if 'membership chair' not in off.title.lower():
+                    if off.member:
+                        l = [off.title.replace('Club ', '').replace('Chairperson', 'Chair'), '--']
+                        l.extend(self.get_member_rows(off.member, trail=False, include_homeclub=False))
+                        officers.append(l)
+            if officers:
+                self.blank()
+                for row in itertools.zip_longest(*officers, fillvalue=''):
+                    self.out.append(f"|{'|'.join(row)}|")
+            meeting = []
+            if club.meeting_time:
+                meeting.append(club.meeting_time)
+            if club.meeting_address:
+                meeting.append(', '.join(club.meeting_address))
+            if meeting:
+                self.blank()
+                self.out.append(f"Meetings: {'. '.join(meeting)}")
+            if club.postal_address:
+                self.blank()
+                self.out.append(f"Postal Address: {', '.join(club.postal_address)}")
+            if club.website:
+                self.blank()
+                self.out.append(f"Website: <{club.website}>")
+            self.blank()
 
     def output_officer(self, off):
         self.out.append(f"### {off.title}")
@@ -203,6 +248,12 @@ while data.next_district():
             if clubs or data.zone.chair:
                 output.output_zone(clubs, data.zone.chair)
     data.reset_district()
+    
+    clubs = [club for club in data.get_district_clubs() if not club.is_closed]
+    if clubs:
+        output.output_heading(2, "Clubs")
+        for club in clubs:
+            output.output_club(club)
 
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(output.out))

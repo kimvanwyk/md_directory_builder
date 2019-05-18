@@ -26,10 +26,13 @@ def build_pdf(file_in, template=TEMPLATE, image=IMAGE_NAME):
                            ('\\toprule\n', ''),
                            ('\\bottomrule\n', ''),
                            ('\\hspace*{0.333em}\n',''),
+                           (r'\strut\end{minipage}',''),
                            (r'\\' + '\n\n', '\n\n')):
+
             text = text.replace(pat, rep)
 
-        for (pat, rep) in ((r'\\addcontentsline.*?' + '\n', ''),):
+        for (pat, rep) in ((r'\\addcontentsline.*?' + '\n', ''),
+                           (r'\\begin\{minipage\}.*?\\strut' + '\n', '')):
             (text, count) = re.subn(pat, rep, text)
 
     tex_file_mod = f"{fn}.tex"

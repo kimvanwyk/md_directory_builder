@@ -60,14 +60,12 @@ class Region(object):
     name = attr.ib(default=None) 
     chair = attr.ib(default=None) 
     district = attr.ib(default=None)
-    def __attrs_post_init__(self):
-        self.long_name = f"Region {self.name}"
 
 @attr.s
 class Zone(Region):
     region = attr.ib(default=None)
     def __attrs_post_init__(self):
-        self.long_name = f"Zone {self.name}"
+        self.long_name = f"{self.name}, {self.region.name}"
 
 @attr.s
 class Club(object):
@@ -76,6 +74,7 @@ class Club(object):
     struct = attr.ib(default=None)
     prev_struct = attr.ib(default=None)
     name = attr.ib(default=None)
+    parent = attr.ib(default=None)
     meeting_time = attr.ib(default=None)
     meeting_address = attr.ib(factory=list)
     postal_address = attr.ib(factory=list)
@@ -270,6 +269,8 @@ class DBHandler(object):
             map['postal_address'].append(res['po_code'])
         map['club_type'] = club_type_mapping[res['type']]
 
+        if res['parent_id']:
+            map['parent'] = self.get_club(res['parent_id'], include_officers=False)
         if include_officers:
             ts = self.tables['clubofficer']
             map['officers'] = []
@@ -380,8 +381,8 @@ class DBHandler(object):
         return [self.get_struct(r.id, include_officers=include_officers) for r in db.conn.execute(t.select(and_(t.c.parent_id == struct_id, 
                                                                                                           t.c.in_use_b == 1)).order_by(t.c.name)).fetchall()]
 
-    def get_district_clubs(self, struct_id):
-        return self.__get_district_child(struct_id, 'club', 'name', self.get_club)
+    def get_district_clubs(self, struct_id, include_officers=False):
+        return self.__get_district_child(struct_id, 'club', 'name', self.get_club, {'include_officers':include_officers})
 
     def get_district_regions(self, struct_id, include_officers=False):
         return self.__get_district_child(struct_id, 'region', 'id', self.get_region, {'include_officers':include_officers})
@@ -500,7 +501,7 @@ class Data(object):
 
     def get_district_clubs(self):
         if self.district:
-            return self.db.get_district_clubs(self.district.id)
+            return self.db.get_district_clubs(self.district.id, include_officers=True)
         return []
 
     def get_district_regions(self):
