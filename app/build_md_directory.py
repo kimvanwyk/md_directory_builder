@@ -269,6 +269,15 @@ while data.next_district():
             output.output_past_officer(po)
         output.end_multicols()
 
+    past_dgs = data.get_past_foreign_dgs()
+    if past_dgs:
+        output.output_heading(2, "Past District Governors From Other Districts")
+        output.start_multicols()
+        for po in past_dgs:
+            if not po.member.is_resigned:
+                output.output_past_officer(po)
+        output.end_multicols()
+
 with open('output.txt', 'w') as fh:
     fh.write('\n'.join(output.out))
     

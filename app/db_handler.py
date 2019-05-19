@@ -502,6 +502,11 @@ class Data(object):
             return self.db.get_past_dgs(self.district.id)
         return []
 
+    def get_past_foreign_dgs(self):
+        if self.district:
+            return self.db.get_past_foreign_dgs(self.district.id)
+        return []
+
     def get_district_clubs(self):
         if self.district:
             return self.db.get_district_clubs(self.district.id, include_officers=True)
