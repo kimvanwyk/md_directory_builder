@@ -309,7 +309,7 @@ class DBHandler(object):
     def get_region_zones(self, region_id, include_officers=False):
         t = self.tables['zone']
         res = db.conn.execute(t.select(and_(t.c.region_id == region_id,
-                                            t.c.in_region_b == 1)).order_by(t.c.name)).fetchall()
+                                            t.c.in_region_b == 1)).order_by(t.c.id)).fetchall()
         return [self.get_zone(r.id, include_officers=include_officers) for r in res]
 
     def get_zone(self, zone_id, exclude=('struct_id', 'in_region_b', 'region_id'),
