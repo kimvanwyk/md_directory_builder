@@ -130,6 +130,10 @@ class Output(object):
     def output_officer(self, off):
         self.out.append(f"### {off.title}")
         self.output_member(off.member)
+        self.out.append('')
+        self.out.append('')
+        if off.committee:
+            self.out.append(f'**Committee:** {", ".join([c.strip() for c in off.committee])}')
         self.out.append('\\ ')
         self.out.append('')
 
