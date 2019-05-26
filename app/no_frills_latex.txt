@@ -65,11 +65,28 @@ $endif$
 
 \newcolumntype{C}{>{\centering\arraybackslash}X}
 
+\begin{titlepage}
+\begin{center}
+\includegraphics{/io/lionsemblem_clr.png}\\
+\Huge
+$title$\\
+\normalsize
+$compiled$\\
+\end{center}
+
+
+For additions or corrections to this directory, contact:
+\begin{itemize}
+\item Denis Meyer, MDC Information Technology, \href{mailto:denis@sheppielions.co.za}{denis@sheppielions.co.za}
+\item Kim van Wyk, Directory Compiler, \href{mailto:vanwykk@gmail.com}{vanwykk@gmail.com}
+\end{itemize}
+\end{titlepage}
 $if(toc)$
 {
 $if(colorlinks)$
 \hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$black$endif$}
 $endif$
+
 \setcounter{tocdepth}{$toc-depth$}
 \tableofcontents
 }

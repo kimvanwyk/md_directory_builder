@@ -1,30 +1,29 @@
-''' Tests for db_handler classes and methods
-'''
+""" Tests for db_handler classes and methods
+"""
 
 from pprint import pprint
 
 import db_handler
 
-MEMBER_IDS = {'Kim': 2602128,
-       'Vicki': 2352224,
-       'Denis': 666898,
-       'Alistair': 903648,
-       'Avril': 4200750,
-       'Trevor': 709888,
-       'Phil': 2687992,
-       'Yolandi': 3762497,
-       'Barbara': 2680550,
-       'Jacqui': 1399208,
-       'Dave': 355357,
-       'Neville': 3478783,
-       'Beryl': 4040774,
-       'Lyn': 349981,
-       'Malcolm': 990112
-       }
+MEMBER_IDS = {
+    "Kim": 2602128,
+    "Vicki": 2352224,
+    "Denis": 666898,
+    "Alistair": 903648,
+    "Avril": 4200750,
+    "Trevor": 709888,
+    "Phil": 2687992,
+    "Yolandi": 3762497,
+    "Barbara": 2680550,
+    "Jacqui": 1399208,
+    "Dave": 355357,
+    "Neville": 3478783,
+    "Beryl": 4040774,
+    "Lyn": 349981,
+    "Malcolm": 990112,
+}
 
-CLUB_IDS = {'North Durban': 27814,
-            'Benoni Lakes': 115092
-       }
+CLUB_IDS = {"North Durban": 27814, "Benoni Lakes": 115092}
 
 sl = db_handler.get_struct_list()
 
@@ -39,21 +38,21 @@ if 1:
 
     offs = []
     for off in data.struct.officers:
-        if 'Council Chairperson' == off.title:
+        if "Council Chairperson" == off.title:
             offs.append(off)
             break
     dgs = []
     vdgs = []
     while data.next_district():
         for off in data.district.officers:
-            if off.title == 'District Governor':
+            if off.title == "District Governor":
                 dgs.append(off)
-            if off.title == 'First Vice District Governor':
+            if off.title == "First Vice District Governor":
                 vdgs.append(off)
     offs.extend(dgs)
     offs.extend(vdgs)
     for off in data.struct.officers:
-        if 'Council Chairperson' != off.title:
+        if "Council Chairperson" != off.title:
             offs.append(off)
 
     pprint([(o.title, o.member.long_name) for o in offs])
@@ -63,7 +62,6 @@ if 1:
 # pprint([(o.title, o.member.long_name) for o in data.struct.officers])
 # while data.next_district():
 #     pprint([(o.title, o.member.long_name) for o in data.district.officers[:2]])
-
 
 
 # pprint([(po.year, po.end_month, po.member.long_name) for po in data.get_past_ccs()][-10:])
@@ -106,4 +104,3 @@ if 1:
 
 # pprint([(po.year, po.end_month, po.previous_district.name, po.member.first_name, po.member.last_name) for po in db.get_past_foreign_dgs(9)])
 # pprint([(po.year, po.end_month, po.previous_district.name, po.member.first_name, po.member.last_name) for po in db.get_past_foreign_dgs(10)])
-

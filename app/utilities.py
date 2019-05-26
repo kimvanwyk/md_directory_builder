@@ -1,4 +1,4 @@
-'''
+"""
 
 Copyright (c) 2011, Kim van Wyk 
 All rights reserved.  
@@ -24,8 +24,9 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-'''
+"""
 from datetime import date
+
 
 def get_current_year(include_initial=False):
     today = date.today()
@@ -39,7 +40,10 @@ def get_current_year(include_initial=False):
         return (year, initial)
     return year
 
+
 def get_years(back=40, fwd=2):
     (year, initial) = get_current_year(include_initial=True)
-    return ([(y, '%s/%s' % (y, y+1)) for y in range(year-back,year+fwd)], initial)
-
+    return (
+        [(y, "%s/%s" % (y, y + 1)) for y in range(year - back, year + fwd)],
+        initial,
+    )
