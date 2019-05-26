@@ -34,8 +34,21 @@ class Output(object):
     """ Hold state for the output lines
     """
 
-    def __init__(self):
+    def __init__(self, title, year):
         self.out = []
+        self.title = f"{year}/{year+1} {title} Directory"
+        self.dt = datetime.now()
+        self.fn = f"{year}{year+1}_{title.lower().replace(' ', '_')}_directory.txt"
+
+    def build(self):
+        with open(self.fn, "w") as fh:
+            fh.write("\n".join(self.out))
+
+        filter_and_build.build_pdf(
+            self.fn,
+            self.title,
+            f"compiled on {self.dt:%A %d %b %Y at %H:%M}",
+            )
 
     def __output_region_zone(self, children, chair, child_desc, chair_desc):
         if not chair:
@@ -233,7 +246,7 @@ class Output(object):
 
 
 data = db_handler.Data(2019, "410")
-output = Output()
+output = Output('Multiple District 410', 2019)
 output.output_struct_preamble(data.struct)
 output.output_heading(2, "Multiple District Council")
 output.start_multicols()
@@ -304,12 +317,4 @@ while data.next_district():
             if not po.member.is_resigned:
                 output.output_past_officer(po)
         output.end_multicols()
-
-with open("output.txt", "w") as fh:
-    fh.write("\n".join(output.out))
-
-filter_and_build.build_pdf(
-    "output.txt",
-    "2019/2020 Multiple District 410 Directory",
-    f"compiled on {datetime.now():%A %d %b %Y at %H:%M}",
-)
+output.build()
