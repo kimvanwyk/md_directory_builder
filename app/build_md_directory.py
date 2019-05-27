@@ -2,7 +2,10 @@ import filter_and_build
 
 import copy
 from datetime import datetime
+import glob
+import os, os.path
 import itertools
+
 
 import db_handler
 
@@ -61,7 +64,7 @@ class Output(object):
         self.title = f"{self.year}/{self.year+1} {title} Directory"
         self.fn = f"{self.year}{self.year+1}_{title.lower().replace(' ', '_')}_directory.txt"
 
-    def build(self):
+    def build(self, ext_keep=('.pdf', '.tex')):
         with open(self.fn, "w") as fh:
             fh.write("\n".join(self.out))
 
@@ -70,6 +73,10 @@ class Output(object):
             self.title,
             f"compiled on {self.dt:%A %d %b %Y at %H:%M}",
             )
+
+        for f in glob.glob(f"{os.path.splitext(self.fn)[0]}.*"):
+            if not any([e in f for e in ext_keep]):
+                os.remove(f)  
 
     def __output_region_zone(self, children, chair, child_desc, chair_desc):
         if not chair:
