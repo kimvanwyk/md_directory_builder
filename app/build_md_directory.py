@@ -30,6 +30,24 @@ def get_md_officers():
     return offs
 
 
+class Outputs(object):
+    def __init__(self):
+        self.outputs = []
+
+    def add_output(self, output):
+        self.outputs.append(output)
+
+    def build(self):
+        for output in self.outputs:
+            output.build()
+
+    def __getattr__(self, name):
+        def method(*args, **kwds):
+            getattr(self.outputs[0], name)(*args, **kwds)
+            if len(self.outputs) > 1:
+                getattr(self.outputs[-1], name)(*args, **kwds)
+        return method
+
 class Output(object):
 
     year = None
@@ -251,75 +269,77 @@ class Output(object):
 data = db_handler.Data(2019, "410")
 Output.year = 2019
 Output.dt = datetime.now()
-outputs = [Output('Multiple District 410')]
-outputs[0].output_struct_preamble(data.struct)
-outputs[0].output_heading(2, "Multiple District Council")
-outputs[0].start_multicols()
+outputs = Outputs()
+outputs.add_output(Output(f'Multiple District {data.struct.name}'))
+outputs.output_struct_preamble(data.struct)
+outputs.output_heading(2, "Multiple District Council")
+outputs.start_multicols()
 for off in get_md_officers():
-    outputs[0].output_officer(off)
-outputs[0].end_multicols()
-outputs[0].output_website(data.struct.website)
+    outputs.output_officer(off)
+outputs.end_multicols()
+outputs.output_website(data.struct.website)
 bso = data.get_brightsight_offices()
 if bso:
-    outputs[0].output_brightsight_office(bso)
+    outputs.output_brightsight_office(bso)
 past_ccs = data.get_past_ccs()
 if past_ccs:
-    outputs[0].output_heading(2, "Past Council Chairs")
-    outputs[0].start_multicols()
+    outputs.output_heading(2, "Past Council Chairs")
+    outputs.start_multicols()
     for po in past_ccs:
-        outputs[0].output_past_officer(po)
-    outputs[0].end_multicols()
+        outputs.output_past_officer(po)
+    outputs.end_multicols()
 
 data.reset()
 while data.next_district():
-    outputs[0].newpage()
-    outputs[0].output_struct_preamble(data.district)
-    outputs[0].output_heading(2, "District Cabinet")
-    outputs[0].start_multicols()
+    outputs.outputs[0].newpage()
+    outputs.add_output(Output(f"District {data.district.name}"))
+    outputs.output_struct_preamble(data.district)
+    outputs.output_heading(2, "District Cabinet")
+    outputs.start_multicols()
     for off in data.district.officers:
-        outputs[0].output_officer(off)
-    outputs[0].end_multicols()
+        outputs.output_officer(off)
+    outputs.end_multicols()
 
     if data.district.website:
-        outputs[0].output_website(data.district.website)
+        outputs.output_website(data.district.website)
 
     if data.zones:
-        outputs[0].output_heading(2, "Regions")
+        outputs.output_heading(2, "Regions")
         while data.next_region():
-            outputs[0].output_heading(3, data.region.name)
+            outputs.output_heading(3, data.region.name)
             zones = data.get_region_zones(include_officers=False)
             if zones or data.region.chair:
-                outputs[0].output_region(zones, data.region.chair)
+                outputs.output_region(zones, data.region.chair)
 
     if data.zones:
-        outputs[0].output_heading(2, "Zones")
+        outputs.output_heading(2, "Zones")
         while data.next_zone():
-            outputs[0].output_heading(3, data.zone.name)
+            outputs.output_heading(3, data.zone.name)
             clubs = data.get_zone_clubs(include_officers=False)
             if clubs or data.zone.chair:
-                outputs[0].output_zone(clubs, data.zone.chair)
+                outputs.output_zone(clubs, data.zone.chair)
     data.reset_district()
 
     clubs = [club for club in data.get_district_clubs() if not club.is_closed]
     if clubs:
-        outputs[0].output_heading(2, "Clubs")
+        outputs.output_heading(2, "Clubs")
         for club in clubs:
-            outputs[0].output_club(club)
+            outputs.output_club(club)
 
     past_dgs = data.get_past_dgs()
     if past_dgs:
-        outputs[0].output_heading(2, "Past District Governors")
-        outputs[0].start_multicols()
+        outputs.output_heading(2, "Past District Governors")
+        outputs.start_multicols()
         for po in past_dgs:
-            outputs[0].output_past_officer(po)
-        outputs[0].end_multicols()
+            outputs.output_past_officer(po)
+        outputs.end_multicols()
 
     past_dgs = data.get_past_foreign_dgs()
     if past_dgs:
-        outputs[0].output_heading(2, "Past District Governors From Other Districts")
-        outputs[0].start_multicols()
+        outputs.output_heading(2, "Past District Governors From Other Districts")
+        outputs.start_multicols()
         for po in past_dgs:
             if not po.member.is_resigned:
-                outputs[0].output_past_officer(po)
-        outputs[0].end_multicols()
-outputs[0].build()
+                outputs.output_past_officer(po)
+        outputs.end_multicols()
+outputs.build()
