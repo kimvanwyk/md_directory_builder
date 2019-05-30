@@ -10,6 +10,14 @@ import itertools
 import db_handler
 
 
+# char for a LaTeX non-breaking space
+LEFT_COLUMN_WIDTH = 60
+BRIGHTSIGHT_LEFT_COLUMN_WIDTH = 20
+RIGHT_COLUMN_WIDTH = 40
+NON_BREAKING_CHAR_PLACEHOLDER = "~"
+NON_BREAKING_SPACE = r"\ "
+
+
 def get_md_officers():
     offs = []
     for off in data.struct.officers:
@@ -49,7 +57,9 @@ class Outputs(object):
             getattr(self.outputs[0], name)(*args, **kwds)
             if len(self.outputs) > 1:
                 getattr(self.outputs[-1], name)(*args, **kwds)
+
         return method
+
 
 class Output(object):
 
@@ -62,32 +72,47 @@ class Output(object):
     def __init__(self, title):
         self.out = []
         self.title = f"{self.year}/{self.year+1} {title} Directory"
-        self.fn = f"{self.year}{self.year+1}_{title.lower().replace(' ', '_')}_directory.txt"
+        self.fn = (
+            f"{self.year}{self.year+1}_{title.lower().replace(' ', '_')}_directory.txt"
+        )
 
-    def build(self, ext_keep=('.pdf', '.tex')):
+    def build(self, ext_keep=(".pdf", ".tex")):
         with open(self.fn, "w") as fh:
             fh.write("\n".join(self.out))
 
         filter_and_build.build_pdf(
-            self.fn,
-            self.title,
-            f"compiled on {self.dt:%A %d %b %Y at %H:%M}",
-            )
+            self.fn, self.title, f"compiled on {self.dt:%A %d %b %Y at %H:%M}"
+        )
 
         for f in glob.glob(f"{os.path.splitext(self.fn)[0]}.*"):
             if not any([e in f for e in ext_keep]):
-                os.remove(f)  
+                os.remove(f)
+
+    def __output_aligned_left_column_row(self, left, right, align='l', left_column_width=LEFT_COLUMN_WIDTH):
+        a = getattr(left, f"{align}just")
+        if left:
+            l = a(left_column_width,NON_BREAKING_CHAR_PLACEHOLDER).replace(NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE)
+        else:
+            l = left
+        if right:
+            r = right.ljust(RIGHT_COLUMN_WIDTH,NON_BREAKING_CHAR_PLACEHOLDER).replace(NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE)
+        else:
+            r = right
+        self.out.append(
+            f"|{l}|{r}|"
+        )
 
     def __output_region_zone(self, children, chair, child_desc, chair_desc):
         if not chair:
             chair_rows = ["Position Vacant"]
         else:
             chair_rows = self.get_member_rows(chair, trail=False)
-        self.out.append(f"|{child_desc}|{chair_desc}|")
+        self.__output_aligned_left_column_row(child_desc, chair_desc)
         self.out.append("|:----|:----|")
         for (child, cr) in itertools.zip_longest(
             [c.name for c in children], chair_rows, fillvalue=""
         ):
+            # self.__output_aligned_left_column_row(child, cr)
             self.out.append(f"|{child}|{cr}|")
         self.out.append("")
 
@@ -243,21 +268,21 @@ class Output(object):
         self.out.append("")
         self.out.append("|||")
         self.out.append("|----:|:----|")
-        self.out.append(f"|Contact Person:|{bso.contact_person}|")
+        self.__output_aligned_left_column_row("Contact Person:", bso.contact_person, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.physical_address:
-            self.out.append(f"|Physical Address:|{bso.physical_address[0]}|")
+            self.__output_aligned_left_column_row("Physical Address:", bso.physical_address[0], 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             for pa in bso.physical_address[1:]:
-                self.out.append(f"||{pa}|")
+                self.__output_aligned_left_column_row("", pa, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.postal_address:
-            self.out.append(f"|Postal Address:|{bso.postal_address[0]}|")
+            self.__output_aligned_left_column_row("Postal Address:", bso.postal_address[0], 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             for pa in bso.postal_address[1:]:
-                self.out.append(f"||{pa}|")
+                self.__output_aligned_left_column_row("", pa, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.ph:
-            self.out.append(f"|Telephone:|{bso.ph}|")
+            self.__output_aligned_left_column_row("Telephone:", bso.ph, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.email:
-            self.out.append(f"|Email:|<{bso.email}>|")
+            self.__output_aligned_left_column_row("Email:", f"<{bso.email}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.website:
-            self.out.append(f"|Website:|<{bso.website}>|")
+            self.__output_aligned_left_column_row("Website:", f"<{bso.website}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         self.out.append("")
 
         if bso.manager:
@@ -265,11 +290,11 @@ class Output(object):
             self.out.append("")
             self.out.append("|||")
             self.out.append("|----:|:----|")
-            self.out.append(f"|Manager:|{bso.manager.name}|")
+            self.__output_aligned_left_column_row("Manager:", bso.manager.name, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             if bso.manager.ph:
-                self.out.append(f"|Phone:|{bso.manager.ph}|")
+                self.__output_aligned_left_column_row("Phone:", bso.manager.ph, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             if bso.manager.email:
-                self.out.append(f"|Email:|<{bso.manager.email}>|")
+                self.__output_aligned_left_column_row("Email:", f"<{bso.manager.email}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             self.out.append("")
 
 
@@ -277,7 +302,7 @@ data = db_handler.Data(2019, "410")
 Output.year = 2019
 Output.dt = datetime.now()
 outputs = Outputs()
-outputs.add_output(Output(f'Multiple District {data.struct.name}'))
+outputs.add_output(Output(f"Multiple District {data.struct.name}"))
 outputs.output_struct_preamble(data.struct)
 outputs.output_heading(2, "Multiple District Council")
 outputs.start_multicols()
