@@ -18,7 +18,7 @@ NON_BREAKING_CHAR_PLACEHOLDER = "~"
 NON_BREAKING_SPACE = r"\ "
 
 
-def get_md_officers():
+def get_md_officers(data):
     offs = []
     for off in data.struct.officers:
         if "Council Chairperson" == off.title:
@@ -298,80 +298,99 @@ class Output(object):
             self.out.append("")
 
 
-data = db_handler.Data(2019, "410")
-Output.year = 2019
-Output.dt = datetime.now()
-outputs = Outputs()
-outputs.add_output(Output(f"Multiple District {data.struct.name}"))
-outputs.output_struct_preamble(data.struct)
-outputs.output_heading(2, "Multiple District Council")
-outputs.start_multicols()
-for off in get_md_officers():
-    outputs.output_officer(off)
-outputs.end_multicols()
-outputs.output_website(data.struct.website)
-bso = data.get_brightsight_offices()
-if bso:
-    outputs.output_brightsight_office(bso)
-past_ccs = data.get_past_ccs()
-if past_ccs:
-    outputs.output_heading(2, "Past Council Chairs")
-    outputs.start_multicols()
-    for po in past_ccs:
-        outputs.output_past_officer(po)
-    outputs.end_multicols()
-
-data.reset()
-while data.next_district():
-    outputs.outputs[0].newpage()
-    outputs.add_output(Output(f"District {data.district.name}"))
-    outputs.output_struct_preamble(data.district)
-    outputs.output_heading(2, "District Cabinet")
-    outputs.start_multicols()
-    for off in data.district.officers:
-        outputs.output_officer(off)
-    outputs.end_multicols()
-
-    if data.district.website:
-        outputs.output_website(data.district.website)
-
-    if data.zones:
-        outputs.output_heading(2, "Regions")
-        while data.next_region():
-            outputs.output_heading(3, data.region.name)
-            zones = data.get_region_zones(include_officers=False)
-            if zones or data.region.chair:
-                outputs.output_region(zones, data.region.chair)
-
-    if data.zones:
-        outputs.output_heading(2, "Zones")
-        while data.next_zone():
-            outputs.output_heading(3, data.zone.name)
-            clubs = data.get_zone_clubs(include_officers=False)
-            if clubs or data.zone.chair:
-                outputs.output_zone(clubs, data.zone.chair)
-    data.reset_district()
-
-    clubs = [club for club in data.get_district_clubs() if not club.is_closed]
-    if clubs:
-        outputs.output_heading(2, "Clubs")
-        for club in clubs:
-            outputs.output_club(club)
-
-    past_dgs = data.get_past_dgs()
-    if past_dgs:
-        outputs.output_heading(2, "Past District Governors")
+def get_outputs(year, struct_name):
+    data = db_handler.get_data_object_from_db(year, struct_name)
+    Output.year = year
+    Output.dt = datetime.now()
+    outputs = Outputs()
+    if data.md:
+        outputs.add_output(Output(f"Multiple District {data.struct.name}"))
+        outputs.output_struct_preamble(data.struct)
+        outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
-        for po in past_dgs:
-            outputs.output_past_officer(po)
+        for off in get_md_officers(data):
+            outputs.output_officer(off)
         outputs.end_multicols()
-
-    past_dgs = data.get_past_foreign_dgs()
-    if past_dgs:
-        outputs.output_heading(2, "Past District Governors From Other Districts")
-        outputs.start_multicols()
-        for po in past_dgs:
-            if not po.member.is_resigned:
+        outputs.output_website(data.struct.website)
+        bso = data.get_brightsight_offices()
+        if bso:
+            outputs.output_brightsight_office(bso)
+        past_ccs = data.get_past_ccs()
+        if past_ccs:
+            outputs.output_heading(2, "Past Council Chairs")
+            outputs.start_multicols()
+            for po in past_ccs:
                 outputs.output_past_officer(po)
+            outputs.end_multicols()
+
+    data.reset()
+    while data.next_district():
+        outputs.outputs[0].newpage()
+        outputs.add_output(Output(f"District {data.district.name}"))
+        outputs.output_struct_preamble(data.district)
+        outputs.output_heading(2, "District Cabinet")
+        outputs.start_multicols()
+        for off in data.district.officers:
+            outputs.output_officer(off)
         outputs.end_multicols()
-outputs.build()
+
+        if data.district.website:
+            outputs.output_website(data.district.website)
+
+        if data.zones:
+            outputs.output_heading(2, "Regions")
+            while data.next_region():
+                outputs.output_heading(3, data.region.name)
+                zones = data.get_region_zones(include_officers=False)
+                if zones or data.region.chair:
+                    outputs.output_region(zones, data.region.chair)
+
+        if data.zones:
+            outputs.output_heading(2, "Zones")
+            while data.next_zone():
+                outputs.output_heading(3, data.zone.name)
+                clubs = data.get_zone_clubs(include_officers=False)
+                if clubs or data.zone.chair:
+                    outputs.output_zone(clubs, data.zone.chair)
+        data.reset_district()
+
+        clubs = [club for club in data.get_district_clubs() if not club.is_closed]
+        if clubs:
+            outputs.output_heading(2, "Clubs")
+            for club in clubs:
+                outputs.output_club(club)
+
+        past_dgs = data.get_past_dgs()
+        if past_dgs:
+            outputs.output_heading(2, "Past District Governors")
+            outputs.start_multicols()
+            for po in past_dgs:
+                outputs.output_past_officer(po)
+            outputs.end_multicols()
+
+        past_dgs = data.get_past_foreign_dgs()
+        if past_dgs:
+            outputs.output_heading(2, "Past District Governors From Other Districts")
+            outputs.start_multicols()
+            for po in past_dgs:
+                if not po.member.is_resigned:
+                    outputs.output_past_officer(po)
+            outputs.end_multicols()
+    return outputs
+
+def get_default_year():
+    dt = datetime.now()
+    year = dt.year
+    if dt.month <= 4:
+        year -= 1
+    return year
+
+if __name__ == "__main__":
+    import argparse
+    year = get_default_year()
+    parser = argparse.ArgumentParser("build_md_directory", description="Build a directory for a specified MD or District")
+    parser.add_argument("md_or_dist", help='The name of the MD or district to use, eg "410"')
+    parser.add_argument("--year", type=int, default=year, help=f'The year to build directories for. Defaults to {year}/{year+1}')
+    args = parser.parse_args()
+    outputs = get_outputs(args.year, args.md_or_dist)
+    outputs.build()

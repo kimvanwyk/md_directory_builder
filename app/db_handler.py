@@ -202,7 +202,7 @@ class DBHandler(object):
 
     def __get_district_child(self, struct_id, table, order_field, getter, kwds={}):
         t = self.tables[table]
-        res = db.conn.execute(
+        res = self.conn.execute(
             t.select(t.c.struct_id == struct_id).order_by(getattr(t.c, order_field))
         ).fetchall()
         return [getter(r.id, **kwds) for r in res]
@@ -247,7 +247,7 @@ class DBHandler(object):
         def search_officers(member_id, table, mapping):
             title = None
             t = self.tables[table]
-            res = db.conn.execute(t.select(t.c.member_id == member_id)).fetchall()
+            res = self.conn.execute(t.select(t.c.member_id == member_id)).fetchall()
             index = 100
             for (n, (office_id, addition, op, ttl)) in enumerate(mapping):
                 for r in res:
@@ -267,7 +267,7 @@ class DBHandler(object):
         if not title:
             for (table, ttl) in (("regionchair", "RC"), ("zonechair", "ZC")):
                 t = self.tables[table]
-                res = db.conn.execute(
+                res = self.conn.execute(
                     t.select(and_(t.c.member_id == member_id, t.c.year == self.year))
                 ).fetchall()
                 if res:
@@ -276,10 +276,10 @@ class DBHandler(object):
         if not title:
             for (type_id, ttl) in ((1, "MDC"), (0, "DC")):
                 t = self.tables["struct"]
-                structs = db.conn.execute(t.select(t.c.type_id == type_id)).fetchall()
+                structs = self.conn.execute(t.select(t.c.type_id == type_id)).fetchall()
                 t = self.tables["structchair"]
                 for struct in structs:
-                    res = db.conn.execute(
+                    res = self.conn.execute(
                         t.select(
                             and_(
                                 t.c.member_id == member_id,
@@ -393,7 +393,7 @@ class DBHandler(object):
                     )
 
         t = self.tables["clubzone"]
-        res = db.conn.execute(
+        res = self.conn.execute(
             t.select(and_(t.c.club_id == club_id, t.c.year == self.year))
         ).fetchone()
         if res:
@@ -409,7 +409,7 @@ class DBHandler(object):
         )
         if include_officers:
             t = self.tables["regionchair"]
-            res = db.conn.execute(
+            res = self.conn.execute(
                 t.select(and_(t.c.parent_id == res["id"], t.c.year == self.year))
             ).fetchone()
             if res:
@@ -419,7 +419,7 @@ class DBHandler(object):
 
     def get_region_zones(self, region_id, include_officers=False):
         t = self.tables["zone"]
-        res = db.conn.execute(
+        res = self.conn.execute(
             t.select(and_(t.c.region_id == region_id, t.c.in_region_b == 1)).order_by(
                 t.c.id
             )
@@ -442,7 +442,7 @@ class DBHandler(object):
             )
         if include_officers:
             t = self.tables["zonechair"]
-            res = db.conn.execute(
+            res = self.conn.execute(
                 t.select(and_(t.c.parent_id == res["id"], t.c.year == self.year))
             ).fetchone()
             if res:
@@ -452,7 +452,7 @@ class DBHandler(object):
 
     def get_zone_clubs(self, zone_id, include_officers=False):
         t = self.tables["clubzone"]
-        res = db.conn.execute(
+        res = self.conn.execute(
             t.select(and_(t.c.zone_id == zone_id, t.c.year == self.year))
         ).fetchall()
         clubs = [
@@ -560,7 +560,7 @@ class DBHandler(object):
         t = self.tables["struct"]
         return [
             self.get_struct(r.id, include_officers=include_officers)
-            for r in db.conn.execute(
+            for r in self.conn.execute(
                 t.select(and_(t.c.parent_id == struct_id, t.c.in_use_b == 1)).order_by(
                     t.c.name
                 )
@@ -660,9 +660,9 @@ class DBHandler(object):
 
 
 class Data(object):
-    def __init__(self, year, struct):
+    def __init__(self, year, struct_name, db):
         self.db = db
-        self.struct_id = self.db.struct_ids[struct]
+        self.struct_id = self.db.struct_ids[struct_name]
         self.db.year = year
         self.struct = self.db.get_struct(self.struct_id, include_officers=True)
         self.__district_index = -1
@@ -783,4 +783,6 @@ def get_struct_list():
     return db.get_struct_list()
 
 
-db = DBHandler(**get_db_settings())
+def get_data_object_from_db(year, struct_name, db_settings_fn="db_settings.ini", db_settings_sec="DB"):
+    db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec))
+    return Data(year, struct_name, db)
