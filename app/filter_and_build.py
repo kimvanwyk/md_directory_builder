@@ -17,15 +17,6 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
     volumes[workdir] = {"bind": "/io", "mode": "rw"}
     (fn, ext) = os.path.splitext(file_in)
     tex_file = f"{fn}_orig.tex"
-    client.containers.run(
-        IMAGE_NAME,
-        command=f'-s -o {tex_file} -V title="{title}" -V compiled="{compiled}" --toc --template={template} {file_in}',
-        volumes=volumes,
-        auto_remove=True,
-        stdin_open=True,
-        stream=True,
-        tty=True,
-    )
 
     out = []
     with open(tex_file, "r") as fh:
@@ -52,6 +43,16 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
     tex_file_mod = f"{fn}.tex"
     with open(tex_file_mod, "w") as fh:
         fh.write(text)
+
+    client.containers.run(
+        IMAGE_NAME,
+        command=f'-s -o {tex_file} -V title="{title}" -V compiled="{compiled}" --toc --template={template} {file_in}',
+        volumes=volumes,
+        auto_remove=True,
+        stdin_open=True,
+        stream=True,
+        tty=True,
+    )
 
     client.containers.run(
         IMAGE_NAME,
