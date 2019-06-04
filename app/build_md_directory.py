@@ -173,6 +173,8 @@ class Output(object):
                 s = f"{year}Part of {club.zone.long_name}."
             else:
                 s = ""
+            if club.id > 0:
+                s = f"{s} Club Number: {club.id}."
             if s:
                 self.out.append(s)
             officers = []
