@@ -29,6 +29,7 @@ class MultipleDistrict(object):
 
     def __attrs_post_init__(self):
         self.long_name = f"Multiple District {self.name}"
+        self.file_name = f'md{self.name.lower()}'
 
 
 @attr.s
@@ -38,6 +39,7 @@ class District(MultipleDistrict):
     def __attrs_post_init__(self):
         self.name = "%s%s" % (self.parent.name if self.parent else "", self.name)
         self.long_name = f"District {self.name}"
+        self.file_name = f'district_{self.name.lower()}'
 
 
 @attr.s
@@ -120,7 +122,8 @@ class Member(object):
             self.long_name = "%s (%s)" % (self.name, self.partner)
         else:
             self.long_name = self.name
-
+        self.is_active = not any((self.is_resigned, self.is_deceased))
+            
 
 @attr.s
 class Officer(object):
