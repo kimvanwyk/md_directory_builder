@@ -229,7 +229,7 @@ class Output(object):
         self.out.append("")
 
     def output_past_officer(self, off):
-        year = f"{off.year-1}/{off.year}"
+        year = f"{off.year}/{off.year+1}"
         if hasattr(off, "previous_district"):
             if off.previous_district:
                 year = f"{year} (xxSI {off.previous_district.long_name})"
