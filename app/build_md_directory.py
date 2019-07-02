@@ -69,8 +69,10 @@ class Output(object):
     """ Hold state for the output lines
     """
 
-    def __init__(self, title):
+    def __init__(self, title, newpage=False):
         self.out = []
+        if newpage:
+            self.newpage()
         self.title = f"{self.year}/{self.year+1} {title} Directory"
         self.fn = (
             f"{self.year}{self.year+1}_{title.lower().replace(' ', '_')}_directory.txt"
@@ -309,7 +311,7 @@ def get_outputs(year, struct_name):
     Output.dt = datetime.now()
     outputs = Outputs()
     if data.md:
-        outputs.add_output(Output(f"Multiple District {data.struct.name}"))
+        outputs.add_output(Output(f"Multiple District {data.struct.name}", newpage=True))
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
@@ -322,6 +324,7 @@ def get_outputs(year, struct_name):
             outputs.output_brightsight_office(bso)
         past_ccs = data.get_past_ccs()
         if past_ccs:
+            outputs.outputs[0].newpage()
             outputs.output_heading(2, "Past Council Chairs")
             outputs.start_multicols()
             for po in past_ccs:
@@ -343,6 +346,7 @@ def get_outputs(year, struct_name):
             outputs.output_website(data.district.website)
 
         if data.regions:
+            outputs.outputs[0].newpage()
             outputs.output_heading(2, "Regions")
             while data.next_region():
                 outputs.output_heading(3, data.region.name)
@@ -351,6 +355,7 @@ def get_outputs(year, struct_name):
                     outputs.output_region(zones, data.region.chair)
 
         if data.zones:
+            outputs.outputs[0].newpage()
             outputs.output_heading(2, "Zones")
             while data.next_zone():
                 name = data.zone.name
@@ -364,12 +369,14 @@ def get_outputs(year, struct_name):
 
         clubs = [club for club in data.get_district_clubs() if not club.is_closed]
         if clubs:
+            outputs.outputs[0].newpage()
             outputs.output_heading(2, "Clubs")
             for club in clubs:
                 outputs.output_club(club)
 
         past_dgs = data.get_past_dgs()
         if past_dgs:
+            outputs.outputs[0].newpage()
             outputs.output_heading(2, "Past District Governors")
             outputs.start_multicols()
             for po in past_dgs:
