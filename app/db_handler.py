@@ -97,6 +97,10 @@ class Club(object):
     is_closed = attr.ib(default=False)
     officers = attr.ib(factory=list)
 
+    def __attrs_post_init__(self):
+        self.full_name = self.name
+        if self.club_type.value > 1:
+            self.full_name = f"{self.name} ({self.club_type.name.capitalize()} club of {self.parent.name})"
 
 @attr.s
 class Member(object):
@@ -458,9 +462,11 @@ class DBHandler(object):
         res = self.conn.execute(
             t.select(and_(t.c.zone_id == zone_id, t.c.year == self.year))
         ).fetchall()
-        clubs = [
-            self.get_club(r.club_id, include_officers=include_officers) for r in res
-        ]
+        clubs = []
+        for r in res:
+            c = self.get_club(r.club_id, include_officers=include_officers)
+            if not c.is_closed:
+                clubs.append(c)
         clubs.sort(key=lambda x: x.name)
         return clubs
 

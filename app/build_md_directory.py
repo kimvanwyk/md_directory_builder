@@ -110,7 +110,7 @@ class Output(object):
         self.__output_aligned_left_column_row(child_desc, chair_desc)
         self.out.append("|:----|:----|")
         for (child, cr) in itertools.zip_longest(
-            [c.name for c in children], chair_rows, fillvalue=""
+            [getattr(c, 'full_name', c.name) for c in children], chair_rows, fillvalue=""
         ):
             # self.__output_aligned_left_column_row(child, cr)
             self.out.append(f"|{child}|{cr}|")
@@ -172,7 +172,7 @@ class Output(object):
             if club.zone:
                 s = f"{year}Part of {club.zone.long_name}."
             else:
-                s = ""
+                s = year
             if club.id > 0:
                 s = f"{s} Club Number: {club.id}."
             if s:
@@ -193,10 +193,13 @@ class Output(object):
                             )
                         )
                         officers.append(l)
+            self.blank()
             if officers:
                 self.blank()
                 for row in itertools.zip_longest(*officers, fillvalue=""):
                     self.out.append(f"|{'|'.join(row)}|")
+            else:
+                self.out.append("*No club officer information available.*")
             meeting = []
             if club.meeting_time:
                 meeting.append(club.meeting_time)
@@ -339,7 +342,7 @@ def get_outputs(year, struct_name):
         if data.district.website:
             outputs.output_website(data.district.website)
 
-        if data.zones:
+        if data.regions:
             outputs.output_heading(2, "Regions")
             while data.next_region():
                 outputs.output_heading(3, data.region.name)
@@ -350,7 +353,10 @@ def get_outputs(year, struct_name):
         if data.zones:
             outputs.output_heading(2, "Zones")
             while data.next_zone():
-                outputs.output_heading(3, data.zone.name)
+                name = data.zone.name
+                if data.zone.region:
+                    name =f"{name} ({data.zone.region.name})"
+                outputs.output_heading(3, name)
                 clubs = data.get_zone_clubs(include_officers=False)
                 if clubs or data.zone.chair:
                     outputs.output_zone(clubs, data.zone.chair)

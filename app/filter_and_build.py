@@ -7,6 +7,7 @@ import os, os.path
 import re
 
 IMAGE_NAME = "kimvanwyk/pandoc:latest"
+# IMAGE_NAME = "registry.gitlab.com/kimvanwyk/document-containers/pandoc"
 TEMPLATE = "no_frills_latex.txt"
 
 
@@ -25,7 +26,7 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
         auto_remove=True,
         stdin_open=True,
         stream=True,
-        tty=True,
+        tty=False,
     )
 
     out = []
@@ -62,7 +63,7 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
         auto_remove=True,
         stdin_open=True,
         stream=True,
-        tty=True,
+        tty=False,
     )
 
     client.containers.run(
@@ -73,7 +74,7 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
         auto_remove=True,
         stdin_open=True,
         stream=True,
-        tty=True,
+        tty=False,
     )
 
 
