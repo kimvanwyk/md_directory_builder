@@ -17,6 +17,8 @@ RIGHT_COLUMN_WIDTH = 40
 NON_BREAKING_CHAR_PLACEHOLDER = "~"
 NON_BREAKING_SPACE = r"\ "
 
+MAX_PER_PAGE_OFFICERS = 6
+
 
 def get_md_officers(data):
     offs = []
@@ -52,11 +54,18 @@ class Outputs(object):
         for output in self.outputs:
             output.build()
 
+    def newpage(self, first_only=False):
+        self.outputs[0].newpage()
+        if not first_only:
+            for output in self.outputs[1:]:
+                output.newpage()
+        
     def __getattr__(self, name):
         def method(*args, **kwds):
-            getattr(self.outputs[0], name)(*args, **kwds)
+            ret = getattr(self.outputs[0], name)(*args, **kwds)
             if len(self.outputs) > 1:
-                getattr(self.outputs[-1], name)(*args, **kwds)
+                ret = getattr(self.outputs[-1], name)(*args, **kwds)
+            return ret
 
         return method
 
@@ -121,6 +130,10 @@ class Output(object):
     def newpage(self):
         self.out.append(r"\newpage")
 
+    def columnbreak(self):
+        self.out.append(r"\columnbreak")
+        self.out.append("")
+
     def blank(self):
         self.out.append("")
 
@@ -156,7 +169,9 @@ class Output(object):
             self.out.extend(self.get_member_rows(member))
 
     def output_club(self, club):
+        n = 0
         if club.name:
+            n += 1
             name = club.name
             if club.club_type != db_handler.ClubType.lions:
                 parent = f"Club of {club.parent.name}" if club.parent else ""
@@ -197,6 +212,7 @@ class Output(object):
                         officers.append(l)
             self.blank()
             if officers:
+                n += 1
                 self.blank()
                 for row in itertools.zip_longest(*officers, fillvalue=""):
                     self.out.append(f"|{'|'.join(row)}|")
@@ -207,6 +223,8 @@ class Output(object):
                 meeting.append(club.meeting_time)
             if club.meeting_address:
                 meeting.append(", ".join(club.meeting_address))
+            if any((meeting, club.postal_address, club.website)):
+                n += 1
             if meeting:
                 self.blank()
                 self.out.append(f"Meetings: {'. '.join(meeting)}")
@@ -217,6 +235,7 @@ class Output(object):
                 self.blank()
                 self.out.append(f"Website: <{club.website}>")
             self.blank()
+        return n
 
     def output_officer(self, off):
         self.out.append(f"### {off.title}")
@@ -315,8 +334,10 @@ def get_outputs(year, struct_name):
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
-        for off in get_md_officers(data):
+        for (n,off) in enumerate(get_md_officers(data),1):
             outputs.output_officer(off)
+            if n and not (n % MAX_PER_PAGE_OFFICERS):
+                outputs.columnbreak()
         outputs.end_multicols()
         outputs.output_website(data.struct.website)
         bso = data.get_brightsight_offices()
@@ -324,7 +345,7 @@ def get_outputs(year, struct_name):
             outputs.output_brightsight_office(bso)
         past_ccs = data.get_past_ccs()
         if past_ccs:
-            outputs.outputs[0].newpage()
+            outputs.newpage()
             outputs.output_heading(2, "Past Council Chairs")
             outputs.start_multicols()
             for po in past_ccs:
@@ -333,30 +354,36 @@ def get_outputs(year, struct_name):
 
     data.reset()
     while data.next_district():
-        outputs.outputs[0].newpage()
-        outputs.add_output(Output(f"District {data.district.name}"))
+        outputs.add_output(Output(f"District {data.district.name}", newpage=True))
         outputs.output_struct_preamble(data.district)
         outputs.output_heading(2, "District Cabinet")
         outputs.start_multicols()
-        for off in data.district.officers:
+        for (n,off) in enumerate(data.district.officers,1):
             outputs.output_officer(off)
+            if n and not (n % MAX_PER_PAGE_OFFICERS):
+                outputs.columnbreak()
         outputs.end_multicols()
 
         if data.district.website:
             outputs.output_website(data.district.website)
 
         if data.regions:
-            outputs.outputs[0].newpage()
+            outputs.newpage()
             outputs.output_heading(2, "Regions")
+            n = 0
             while data.next_region():
                 outputs.output_heading(3, data.region.name)
                 zones = data.get_region_zones(include_officers=False)
                 if zones or data.region.chair:
+                    n += 1
                     outputs.output_region(zones, data.region.chair)
+                    if n and not (n % 5):
+                        outputs.newpage()
 
         if data.zones:
-            outputs.outputs[0].newpage()
+            outputs.newpage()
             outputs.output_heading(2, "Zones")
+            n = 0
             while data.next_zone():
                 name = data.zone.name
                 if data.zone.region:
@@ -365,18 +392,25 @@ def get_outputs(year, struct_name):
                 clubs = data.get_zone_clubs(include_officers=False)
                 if clubs or data.zone.chair:
                     outputs.output_zone(clubs, data.zone.chair)
+                    n += 1
+                    if n and not (n % 3):
+                        outputs.newpage()
         data.reset_district()
 
         clubs = [club for club in data.get_district_clubs() if not club.is_closed]
         if clubs:
-            outputs.outputs[0].newpage()
+            outputs.newpage()
             outputs.output_heading(2, "Clubs")
+            n = 0
             for club in clubs:
-                outputs.output_club(club)
+                n += outputs.output_club(club)
+                if n >= 9:
+                    outputs.newpage()
+                    n = 0
 
         past_dgs = data.get_past_dgs()
         if past_dgs:
-            outputs.outputs[0].newpage()
+            outputs.newpage()
             outputs.output_heading(2, "Past District Governors")
             outputs.start_multicols()
             for po in past_dgs:
