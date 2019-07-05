@@ -667,6 +667,10 @@ class DBHandler(object):
     def get_past_dgs(self, struct_id):
         return self.get_past_struct_officers(struct_id, 5)
 
+    def set_club_website(self, club_id, website):
+        t = self.tables["club"]
+        self.conn.execute(t.update(t.c.id == club_id, {'website': website}))
+        
 
 class Data(object):
     def __init__(self, year, struct_name, db):
@@ -751,9 +755,9 @@ class Data(object):
             return self.db.get_past_foreign_dgs(self.district.id)
         return []
 
-    def get_district_clubs(self):
+    def get_district_clubs(self, include_officers=True):
         if self.district:
-            return self.db.get_district_clubs(self.district.id, include_officers=True)
+            return self.db.get_district_clubs(self.district.id, include_officers=include_officers)
         return []
 
     def get_district_regions(self):
