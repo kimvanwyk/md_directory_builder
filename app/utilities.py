@@ -47,3 +47,5 @@ def get_years(back=40, fwd=2):
         [(y, "%s/%s" % (y, y + 1)) for y in range(year - back, year + fwd)],
         initial,
     )
+
+print(get_years())
