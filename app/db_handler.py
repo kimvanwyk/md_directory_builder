@@ -4,6 +4,7 @@ from enum import Enum
 import operator
 
 import attr
+from profilehooks import timecall, profile
 from sqlalchemy import create_engine, Table, MetaData, and_, or_, select
 
 from utilities import get_current_year
@@ -149,6 +150,8 @@ class PastDG(PastOfficer):
 
 
 class DBHandler(object):
+
+    #@profile(immediate=False, filename="profile_results")
     def __init__(self, username, password, schema, host, port, db_type, year=None):
         if not year:
             year = get_current_year()
@@ -195,6 +198,7 @@ class DBHandler(object):
             s = self.get_struct(r.id)
             self.struct_ids[s.name] = r.id
 
+    # #@profile(immediate=False, filename="profile_results")
     def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field="id"):
         t = self.tables[table]
         res = self.conn.execute(
@@ -207,6 +211,7 @@ class DBHandler(object):
                     map[mapping.get(k, k)] = bool(v) if "_b" in k else v
         return (map, res)
 
+    #@profile(immediate=False, filename="profile_results")
     def __get_district_child(self, struct_id, table, order_field, getter, kwds={}):
         t = self.tables[table]
         res = self.conn.execute(
@@ -214,11 +219,13 @@ class DBHandler(object):
         ).fetchall()
         return [getter(r.id, **kwds) for r in res]
 
+    #@profile(immediate=False, filename="profile_results")
     def get_struct_list(self):
         k = list(self.struct_ids.keys())
         k.sort()
         return k
 
+    #@profile(immediate=False, filename="profile_results")
     def get_title(
         self,
         member_id,
@@ -251,6 +258,7 @@ class DBHandler(object):
         if none found
         """
 
+        #@profile(immediate=False, filename="profile_results")
         def search_officers(member_id, table, mapping):
             title = None
             t = self.tables[table]
@@ -304,6 +312,7 @@ class DBHandler(object):
             title = search_officers(member_id, "clubofficer", club_officers)
         return title
 
+    #@profile(immediate=False, filename="profile_results")
     def get_member(
         self,
         member_id,
@@ -324,6 +333,7 @@ class DBHandler(object):
         m = Member(**map)
         return m
 
+    #@profile(immediate=False, filename="profile_results")
     def get_club(
         self,
         club_id,
@@ -409,6 +419,7 @@ class DBHandler(object):
         c = Club(**map)
         return c
 
+    #@profile(immediate=False, filename="profile_results")
     def get_region(self, region_id, exclude=("struct_id",), include_officers=False):
         (map, res) = self.__db_lookup(region_id, "region", {}, exclude)
         map["district"] = self.get_struct(
@@ -424,6 +435,7 @@ class DBHandler(object):
         r = Region(**map)
         return r
 
+    #@profile(immediate=False, filename="profile_results")
     def get_region_zones(self, region_id, include_officers=False):
         t = self.tables["zone"]
         res = self.conn.execute(
@@ -433,6 +445,7 @@ class DBHandler(object):
         ).fetchall()
         return [self.get_zone(r.id, include_officers=include_officers) for r in res]
 
+    #@profile(immediate=False, filename="profile_results")
     def get_zone(
         self,
         zone_id,
@@ -457,6 +470,7 @@ class DBHandler(object):
         z = Zone(**map)
         return z
 
+    #@profile(immediate=False, filename="profile_results")
     def get_zone_clubs(self, zone_id, include_officers=False):
         t = self.tables["clubzone"]
         res = self.conn.execute(
@@ -470,6 +484,7 @@ class DBHandler(object):
         clubs.sort(key=lambda x: x.name)
         return clubs
 
+    #@profile(immediate=False, filename="profile_results")
     def get_struct(
         self,
         struct_id,
@@ -525,6 +540,7 @@ class DBHandler(object):
         s = cls(**map)
         return s
 
+    #@profile(immediate=False, filename="profile_results")
     def get_brightsight_offices(
         self,
         struct_id,
@@ -565,6 +581,7 @@ class DBHandler(object):
         map["struct"] = self.get_struct(struct_id)
         return BrightsightOffice(**map)
 
+    #@profile(immediate=False, filename="profile_results")
     def get_md_districts(self, struct_id, include_officers=False):
         t = self.tables["struct"]
         return [
@@ -576,6 +593,7 @@ class DBHandler(object):
             ).fetchall()
         ]
 
+    #@profile(immediate=False, filename="profile_results")
     def get_district_clubs(self, struct_id, include_officers=False):
         return self.__get_district_child(
             struct_id,
@@ -585,6 +603,7 @@ class DBHandler(object):
             {"include_officers": include_officers},
         )
 
+    #@profile(immediate=False, filename="profile_results")
     def get_district_regions(self, struct_id, include_officers=False):
         return self.__get_district_child(
             struct_id,
@@ -594,6 +613,7 @@ class DBHandler(object):
             {"include_officers": include_officers},
         )
 
+    #@profile(immediate=False, filename="profile_results")
     def get_district_zones(self, struct_id, include_officers=False):
         return self.__get_district_child(
             struct_id,
@@ -603,6 +623,7 @@ class DBHandler(object):
             {"include_officers": include_officers},
         )
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_struct_officers(
         self, struct_id, office_id, cls_map={11: PastOfficer, 5: PastDG}
     ):
@@ -630,6 +651,7 @@ class DBHandler(object):
                 offs[-1].previous_district = self.get_struct(r.id)
         return offs
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_foreign_dgs(self, struct_id, office_id=5):
         to = self.tables["structofficer"]
         ts = self.tables["struct"]
@@ -661,18 +683,22 @@ class DBHandler(object):
             for r in res
         ]
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_ccs(self, struct_id):
         return self.get_past_struct_officers(struct_id, 11)
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_dgs(self, struct_id):
         return self.get_past_struct_officers(struct_id, 5)
 
+    #@profile(immediate=False, filename="profile_results")
     def set_club_website(self, club_id, website):
         t = self.tables["club"]
         self.conn.execute(t.update(t.c.id == club_id, {'website': website}))
         
 
 class Data(object):
+    #@profile(immediate=False, filename="profile_results")
     def __init__(self, year, struct_name, db):
         self.db = db
         self.struct_id = self.db.struct_ids[struct_name]
@@ -694,6 +720,7 @@ class Data(object):
             self.regions = []
             self.zones = []
 
+    #@profile(immediate=False, filename="profile_results")
     def next_district(self):
         if self.md:
             self.__district_index += 1
@@ -709,6 +736,7 @@ class Data(object):
             )
         return True
 
+    #@profile(immediate=False, filename="profile_results")
     def next_region(self):
         if self.district:
             self.__region_index += 1
@@ -718,6 +746,7 @@ class Data(object):
             self.region = self.regions[self.__region_index]
         return True
 
+    #@profile(immediate=False, filename="profile_results")
     def next_zone(self):
         if self.district:
             self.__zone_index += 1
@@ -727,11 +756,13 @@ class Data(object):
             self.zone = self.zones[self.__zone_index]
         return True
 
+    #@profile(immediate=False, filename="profile_results")
     def reset(self):
         if self.md:
             self.district = None
             self.__district_index = -1
 
+    #@profile(immediate=False, filename="profile_results")
     def reset_district(self):
         if self.district:
             self.region = None
@@ -739,32 +770,39 @@ class Data(object):
             self.zone = None
             self.__zone_index = -1
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_ccs(self):
         return self.db.get_past_ccs(self.struct_id)
 
+    #@profile(immediate=False, filename="profile_results")
     def get_brightsight_offices(self):
         return self.db.get_brightsight_offices(self.struct_id)
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_dgs(self):
         if self.district:
             return self.db.get_past_dgs(self.district.id)
         return []
 
+    #@profile(immediate=False, filename="profile_results")
     def get_past_foreign_dgs(self):
         if self.district:
             return self.db.get_past_foreign_dgs(self.district.id)
         return []
 
+    #@profile(immediate=False, filename="profile_results")
     def get_district_clubs(self, include_officers=True):
         if self.district:
             return self.db.get_district_clubs(self.district.id, include_officers=include_officers)
         return []
 
+    #@profile(immediate=False, filename="profile_results")
     def get_district_regions(self):
         if self.district:
             return self.db.get_district_regions(self.district.id)
         return []
 
+    #@profile(immediate=False, filename="profile_results")
     def get_region_zones(self, include_officers=False):
         if self.region:
             zones = self.db.get_region_zones(
@@ -773,6 +811,7 @@ class Data(object):
             return zones
         return []
 
+    #@profile(immediate=False, filename="profile_results")
     def get_zone_clubs(self, include_officers=False):
         if self.zone:
             clubs = self.db.get_zone_clubs(
@@ -782,6 +821,7 @@ class Data(object):
         return []
 
 
+#@profile(immediate=False, filename="profile_results")
 def get_db_settings(fn="db_settings.ini", sec="DB"):
     settings = {}
     cp = configparser.SafeConfigParser()
@@ -792,10 +832,12 @@ def get_db_settings(fn="db_settings.ini", sec="DB"):
     return settings
 
 
+#@profile(immediate=False, filename="profile_results")
 def get_struct_list():
     return db.get_struct_list()
 
 
+#@profile(immediate=False, filename="profile_results")
 def get_data_object_from_db(year, struct_name, db_settings_fn="db_settings.ini", db_settings_sec="DB"):
     db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec))
     return Data(year, struct_name, db)

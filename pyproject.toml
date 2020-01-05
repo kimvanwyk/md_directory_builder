@@ -8,16 +8,18 @@ authors = ["Kim van Wyk <vanwykk@gmail.com>"]
 python = "^3.6"
 attr = "^0.3.1"
 SQLAlchemy = "^1.3"
-mysqlclient = "^1.4"
 pandoc-latex-unlisted = "^0.2.0"
 docker = "^3.7"
 black = {version = "^18.3-alpha.0",allows-prereleases = true}
 autopep8 = "^1.4"
+chardet = "^3.0"
+mysqlclient = "^1.4"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^18.3-alpha.0",allows-prereleases = true}
 ptpython = {version = "^2.0",allows-prereleases = true}
 flake8 = {version = "^3.7",allows-prereleases = true}
+profilehooks = "^1.11"
 
 [build-system]
 requires = ["poetry>=0.12"]

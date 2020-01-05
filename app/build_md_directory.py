@@ -294,7 +294,7 @@ class Output(object):
         self.out.append("")
         self.out.append("|||")
         self.out.append("|----:|:----|")
-        self.__output_aligned_left_column_row("Contact Person:", bso.contact_person, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+        self.__output_aligned_left_column_row("Manager:", bso.contact_person, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         if bso.physical_address:
             self.__output_aligned_left_column_row("Physical Address:", bso.physical_address[0], 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
             for pa in bso.physical_address[1:]:
@@ -310,18 +310,8 @@ class Output(object):
         if bso.website:
             self.__output_aligned_left_column_row("Website:", f"<{bso.website}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
         self.out.append("")
-
-        if bso.manager:
-            self.out.append("### Manager")
-            self.out.append("")
-            self.out.append("|||")
-            self.out.append("|----:|:----|")
-            self.__output_aligned_left_column_row("Manager:", bso.manager.name, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
-            if bso.manager.ph:
-                self.__output_aligned_left_column_row("Phone:", bso.manager.ph, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
-            if bso.manager.email:
-                self.__output_aligned_left_column_row("Email:", f"<{bso.manager.email}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
-            self.out.append("")
+        self.out.append(f"**Please submit scripts via the Brightsight website: <{bso.website}>**")
+        self.out.append("")
 
 
 def get_outputs(year, struct_name):
@@ -441,5 +431,9 @@ if __name__ == "__main__":
     parser.add_argument("md_or_dist", help='The name of the MD or district to use, eg "410"')
     parser.add_argument("--year", type=int, default=year, help=f'The year to build directories for. Defaults to {year}/{year+1}')
     args = parser.parse_args()
+    import time
+    start = time.clock()
     outputs = get_outputs(args.year, args.md_or_dist)
+    print(f'Get outputs: {(time.clock() - start):.3}')
     outputs.build()
+    print(f'outputs built: {(time.clock() - start):.3}')
