@@ -839,5 +839,5 @@ def get_struct_list():
 
 #@profile(immediate=False, filename="profile_results")
 def get_data_object_from_db(year, struct_name, db_settings_fn="db_settings.ini", db_settings_sec="DB"):
-    db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec))
+    db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec), year=year)
     return Data(year, struct_name, db)

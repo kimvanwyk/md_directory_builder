@@ -48,4 +48,5 @@ def get_years(back=40, fwd=2):
         initial,
     )
 
-print(get_years())
+if __name__ == "__main__":
+    print(get_years())
