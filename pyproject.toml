@@ -14,6 +14,7 @@ black = {version = "^18.3-alpha.0",allows-prereleases = true}
 autopep8 = "^1.4"
 chardet = "^3.0"
 mysqlclient = "^1.4"
+clipboard = "^0.0.4"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^18.3-alpha.0",allows-prereleases = true}

@@ -333,6 +333,29 @@ class DBHandler(object):
             map["email"] = email
         return Member(**map)
 
+    def get_members(
+        self,
+        mapping={
+            "deceased_b": "is_deceased",
+            "resigned_b": "is_resigned",
+            "partner_lion_b": "is_partner_lion",
+        },
+    ):
+        tm = self.tables["member"]
+        res = self.conn.execute(tm.select()).fetchall()
+        exclude = ("club_id",)
+        members = []
+        for r in res:
+            map = {}
+            for (k, v) in list(r.items()):
+                if k not in exclude:
+                    map[mapping.get(k, k)] = bool(v) if "_b" in k else v
+            if r["club_id"]:
+                map["club"] = self.get_club(r["club_id"])
+            # map["title"] = self.get_title(r.id)
+            members.append(Member(**map))
+        return members
+
     # @profile(immediate=False, filename="profile_results")
     def get_club(
         self,
@@ -413,7 +436,6 @@ class DBHandler(object):
                         )
                     ).fetchone()
                     if email_res:
-                        print(f"email for {office_id}:  '{email_res.email}' '{email}'")
                         email = email_res.email
                     map["officers"].append(
                         Officer(title, self.get_member(res.member_id, email=email))
