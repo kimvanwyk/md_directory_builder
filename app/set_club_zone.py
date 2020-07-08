@@ -90,16 +90,15 @@ def get_zones(struct, year=2020):
     for club in clubs:
         z_id = int(input(f"{club.name}: "))
         d[club.id] = z_id
-    print(d)
+    insert_zone_mapping(d, struct, year)
 
 
-def insert_zone_mapping(struct, year=2020):
+def insert_zone_mapping(mapping, struct, year=2020):
     data = db_handler.get_data_object_from_db(year, struct)
     tc = data.db.tables["clubzone"]
-    vals = [
-        {"year": 2020, "club_id": k, "zone_id": 32 + v} for (k, v) in ZONE_MAPPING.items()
-    ]
+    vals = [{"year": 2020, "club_id": k, "zone_id": 45 + v} for (k, v) in mapping.items()]
     data.db.conn.execute(tc.insert(vals))
 
 
-insert_zone_mapping("410E")
+get_zones("410W")
+# insert_zone_mapping("410W")

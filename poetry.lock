@@ -341,6 +341,28 @@ pywin32 = ">=223"
 
 [[package]]
 category = "main"
+description = "Python bindings for the Qt cross-platform application and UI framework"
+name = "pyside2"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <3.9"
+version = "5.15.0"
+
+[package.dependencies]
+shiboken2 = "5.15.0"
+
+[[package]]
+category = "main"
+description = "The Alpha Qt version of PySimpleGUI, this GUI SDK Launched in 2018 Actively developed and supported. Requires pyside2 from Qt. Super-simple to create custom GUI's.  Now supports both tkinter, Qt, WxPython and Web (Remi)"
+name = "pysimpleguiqt"
+optional = false
+python-versions = "*"
+version = "0.35.0"
+
+[package.dependencies]
+pyside2 = "*"
+
+[[package]]
+category = "main"
 description = "Python for Window Extensions"
 marker = "sys_platform == \"win32\" and python_version >= \"3.6\""
 name = "pywin32"
@@ -373,6 +395,14 @@ urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
+
+[[package]]
+category = "main"
+description = "Python / C++ bindings helper module"
+name = "shiboken2"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <3.9"
+version = "5.15.0"
 
 [[package]]
 category = "main"
@@ -462,8 +492,8 @@ version = "0.33.6"
 test = ["pytest (>=3.0.0)", "pytest-cov"]
 
 [metadata]
-content-hash = "9dd2527c0700de1d1628bc19b700d2f93cde7302565d5280fb261cee1497961d"
-python-versions = "^3.6"
+content-hash = "26d66833dbbcc8c7dbb9358a927ea69f592667f471b3389a2db9f356b556e8d8"
+python-versions = "3.7"
 
 [metadata.files]
 appdirs = [
@@ -586,6 +616,20 @@ pypiwin32 = [
     {file = "pypiwin32-223-py3-none-any.whl", hash = "sha256:67adf399debc1d5d14dffc1ab5acacb800da569754fafdc576b2a039485aa775"},
     {file = "pypiwin32-223.tar.gz", hash = "sha256:71be40c1fbd28594214ecaecb58e7aa8b708eabfa0125c8a109ebd51edbd776a"},
 ]
+pyside2 = [
+    {file = "PySide2-5.15.0-5.15.0-cp27-cp27m-macosx_10_13_intel.whl", hash = "sha256:ae8158d611a410c58091aa8baf24005894b4e3f40c63ff2482149481ad5395b4"},
+    {file = "PySide2-5.15.0-5.15.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:de0220cc01a8bfdaa8ccd0fc934a1ead2aedca62b49b5fd4bdcdaba6f4585a03"},
+    {file = "PySide2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-abi3-macosx_10_13_intel.whl", hash = "sha256:1478ea8a1ab5d8bc021ce41211933fbc238338fe70c02f7bcc2e80ea900dbf9e"},
+    {file = "PySide2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl", hash = "sha256:f9099e49fb2d3571f5a81eb9ff281ce832ce8c333052e8175e2356b9c3e4a882"},
+    {file = "PySide2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-none-win32.whl", hash = "sha256:7c91a5074f3c60bac7e9336943a1dc9d5c8be8ab88a232dc55018e555dae81b2"},
+    {file = "PySide2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:2d72150f63025b9b55097c1a64d09da37ff9191f73f69237500dec7a4a130541"},
+    {file = "PySide2-5.15.0-5.15.0_1-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:7ac86f31bc0a4fbf3f0bf00890e849441776be304c7b8bf259d777a7fe5fe913"},
+    {file = "PySide2-5.15.0-5.15.0_2-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:fad5ce781d0774bfad39f54b6c3376909b8d27f2075cbde6f4499df7dbd855f9"},
+]
+pysimpleguiqt = [
+    {file = "PySimpleGUIQt-0.35.0-py3-none-any.whl", hash = "sha256:312c3305d048cac3f87655546d2648b36d02a5f7e1a958913f8fce1a2098cb6c"},
+    {file = "PySimpleGUIQt-0.35.0.tar.gz", hash = "sha256:2c18ea261554235a2cdaee76e616d0adc148501e89bf4112a798f2a69bf3c8b5"},
+]
 pywin32 = [
     {file = "pywin32-226-cp27-cp27m-win32.whl", hash = "sha256:10963cecd709b4ade5cc17c69ab2b6f8be7928704ead88ce80a0314f16f79ccb"},
     {file = "pywin32-226-cp27-cp27m-win_amd64.whl", hash = "sha256:9d5572ff1222e1cf7de9ad5a0602c86029e9784ba79f5bd231beaed4a99aed4a"},
@@ -618,6 +662,16 @@ pyyaml = [
 requests = [
     {file = "requests-2.22.0-py2.py3-none-any.whl", hash = "sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31"},
     {file = "requests-2.22.0.tar.gz", hash = "sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"},
+]
+shiboken2 = [
+    {file = "shiboken2-5.15.0-5.15.0-cp27-cp27m-macosx_10_13_intel.whl", hash = "sha256:0826ce788fe55bce19a8f8a2c33d720a6ba8f59e1aab1fa9d7a53eceed3f3af5"},
+    {file = "shiboken2-5.15.0-5.15.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:a92c55363d5cd3cfdd6cd28dcf91e81a00a3aa5bb177d712817c09d26bd760db"},
+    {file = "shiboken2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-abi3-macosx_10_13_intel.whl", hash = "sha256:41a9157fb9cc7e0c0747926b25c23c3f94d59d61736a6ff763ebc7acf6afc5cf"},
+    {file = "shiboken2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl", hash = "sha256:5702e77ad5999ac45498c3cd47f5d078ce7406cf8dc8df74337b0cdc084bf762"},
+    {file = "shiboken2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-none-win32.whl", hash = "sha256:4b0904e0967356a36e80cde05981faa14c120141856d973ee983eac0b83633c0"},
+    {file = "shiboken2-5.15.0-5.15.0-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:19d5f715e5ae8a815a7f148a8614a3225dceee6fd9d5decaa7749657f0f7ccbe"},
+    {file = "shiboken2-5.15.0-5.15.0_1-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:94991848e9ff4d03c2d7feab484113b5b5ad7f9fdfa0b0ff46ce18da47b36b58"},
+    {file = "shiboken2-5.15.0-5.15.0_2-cp35.cp36.cp37.cp38-none-win_amd64.whl", hash = "sha256:e753324a78cbdab1c5917b5600c708a8db7e1336579e7afa20ed90edda15eefa"},
 ]
 shutilwhich = [
     {file = "shutilwhich-1.1.0.tar.gz", hash = "sha256:db1f39c6461e42f630fa617bb8c79090f7711c9ca493e615e43d0610ecb64dc6"},
