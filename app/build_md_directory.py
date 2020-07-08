@@ -59,7 +59,7 @@ class Outputs(object):
         if not first_only:
             for output in self.outputs[1:]:
                 output.newpage()
-        
+
     def __getattr__(self, name):
         def method(*args, **kwds):
             ret = getattr(self.outputs[0], name)(*args, **kwds)
@@ -96,22 +96,26 @@ class Output(object):
         )
 
         for f in glob.glob(f"{os.path.splitext(self.fn)[0]}.*"):
-            if not any([e in f for e in ext_keep]):
+            if all(e not in f for e in ext_keep):
                 os.remove(f)
 
-    def __output_aligned_left_column_row(self, left, right, align='l', left_column_width=LEFT_COLUMN_WIDTH):
+    def __output_aligned_left_column_row(
+        self, left, right, align="l", left_column_width=LEFT_COLUMN_WIDTH
+    ):
         a = getattr(left, f"{align}just")
         if left:
-            l = a(left_column_width,NON_BREAKING_CHAR_PLACEHOLDER).replace(NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE)
+            l = a(left_column_width, NON_BREAKING_CHAR_PLACEHOLDER).replace(
+                NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE
+            )
         else:
             l = left
         if right:
-            r = right.ljust(RIGHT_COLUMN_WIDTH,NON_BREAKING_CHAR_PLACEHOLDER).replace(NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE)
+            r = right.ljust(RIGHT_COLUMN_WIDTH, NON_BREAKING_CHAR_PLACEHOLDER).replace(
+                NON_BREAKING_CHAR_PLACEHOLDER, NON_BREAKING_SPACE
+            )
         else:
             r = right
-        self.out.append(
-            f"|{l}|{r}|"
-        )
+        self.out.append(f"|{l}|{r}|")
 
     def __output_region_zone(self, children, chair, child_desc, chair_desc):
         if not chair:
@@ -121,7 +125,7 @@ class Output(object):
         self.__output_aligned_left_column_row(child_desc, chair_desc)
         self.out.append("|:----|:----|")
         for (child, cr) in itertools.zip_longest(
-            [getattr(c, 'full_name', c.name) for c in children], chair_rows, fillvalue=""
+            [getattr(c, "full_name", c.name) for c in children], chair_rows, fillvalue=""
         ):
             # self.__output_aligned_left_column_row(child, cr)
             self.out.append(f"|{child}|{cr}|")
@@ -141,10 +145,7 @@ class Output(object):
         self.out.extend(["Position Vacant", ""])
 
     def get_member_rows(self, member, trail=True, include_homeclub=True):
-        if trail:
-            t = " \\"
-        else:
-            t = ""
+        t = " \\" if trail else ""
         out = []
         title = member.title
         if not title:
@@ -251,9 +252,8 @@ class Output(object):
 
     def output_past_officer(self, off):
         year = f"{off.year}/{off.year+1}"
-        if hasattr(off, "previous_district"):
-            if off.previous_district:
-                year = f"{year} (xxSI {off.previous_district.long_name})"
+        if hasattr(off, "previous_district") and off.previous_district:
+            year = f"{year} (xxSI {off.previous_district.long_name})"
         self.out.append(f"### {year} {{-}}")
         self.output_member(off.member)
         self.out.append("\\ ")
@@ -267,11 +267,11 @@ class Output(object):
 
     def start_multicols(self):
         self.out.extend(
-            ["\\Begin{multicols}{2}", "\\setlength{\\columnseprule}{0.4pt}", ""]
+            ["\\Begin{multicols*}{2}", "\\setlength{\\columnseprule}{0.4pt}", ""]
         )
 
     def end_multicols(self):
-        self.out.extend(["", "\\End{multicols}", ""])
+        self.out.extend(["", "\\End{multicols*}", ""])
 
     def output_struct_preamble(self, struct):
         self.out.extend([f"# {struct.long_name}", ""])
@@ -294,23 +294,47 @@ class Output(object):
         self.out.append("")
         self.out.append("|||")
         self.out.append("|----:|:----|")
-        self.__output_aligned_left_column_row("Manager:", bso.contact_person, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+        self.__output_aligned_left_column_row(
+            "Manager:", bso.contact_person, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+        )
         if bso.physical_address:
-            self.__output_aligned_left_column_row("Physical Address:", bso.physical_address[0], 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+            self.__output_aligned_left_column_row(
+                "Physical Address:",
+                bso.physical_address[0],
+                "r",
+                BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
+            )
             for pa in bso.physical_address[1:]:
-                self.__output_aligned_left_column_row("", pa, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+                self.__output_aligned_left_column_row(
+                    "", pa, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+                )
         if bso.postal_address:
-            self.__output_aligned_left_column_row("Postal Address:", bso.postal_address[0], 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+            self.__output_aligned_left_column_row(
+                "Postal Address:",
+                bso.postal_address[0],
+                "r",
+                BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
+            )
             for pa in bso.postal_address[1:]:
-                self.__output_aligned_left_column_row("", pa, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+                self.__output_aligned_left_column_row(
+                    "", pa, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+                )
         if bso.ph:
-            self.__output_aligned_left_column_row("Telephone:", bso.ph, 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+            self.__output_aligned_left_column_row(
+                "Telephone:", bso.ph, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
         if bso.email:
-            self.__output_aligned_left_column_row("Email:", f"<{bso.email}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+            self.__output_aligned_left_column_row(
+                "Email:", f"<{bso.email}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
         if bso.website:
-            self.__output_aligned_left_column_row("Website:", f"<{bso.website}>", 'r', BRIGHTSIGHT_LEFT_COLUMN_WIDTH)
+            self.__output_aligned_left_column_row(
+                "Website:", f"<{bso.website}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
         self.out.append("")
-        self.out.append(f"**Please submit scripts via the Brightsight website: <{bso.website}>**")
+        self.out.append(
+            f"**Please submit scripts via the Brightsight website: <{bso.website}>**"
+        )
         self.out.append("")
 
 
@@ -324,7 +348,7 @@ def get_outputs(year, struct_name):
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
-        for (n,off) in enumerate(get_md_officers(data),1):
+        for (n, off) in enumerate(get_md_officers(data), 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
                 outputs.columnbreak()
@@ -348,7 +372,7 @@ def get_outputs(year, struct_name):
         outputs.output_struct_preamble(data.district)
         outputs.output_heading(2, "District Cabinet")
         outputs.start_multicols()
-        for (n,off) in enumerate(data.district.officers,1):
+        for (n, off) in enumerate(data.district.officers, 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
                 outputs.columnbreak()
@@ -377,7 +401,7 @@ def get_outputs(year, struct_name):
             while data.next_zone():
                 name = data.zone.name
                 if data.zone.region:
-                    name =f"{name} ({data.zone.region.name})"
+                    name = f"{name} ({data.zone.region.name})"
                 outputs.output_heading(3, name)
                 clubs = data.get_zone_clubs(include_officers=False)
                 if clubs or data.zone.chair:
@@ -417,6 +441,7 @@ def get_outputs(year, struct_name):
             outputs.end_multicols()
     return outputs
 
+
 def get_default_year():
     dt = datetime.now()
     year = dt.year
@@ -424,16 +449,30 @@ def get_default_year():
         year -= 1
     return year
 
+
 if __name__ == "__main__":
     import argparse
+
     year = get_default_year()
-    parser = argparse.ArgumentParser("build_md_directory", description="Build a directory for a specified MD or District")
-    parser.add_argument("md_or_dist", help='The name of the MD or district to use, eg "410"')
-    parser.add_argument("--year", type=int, default=year, help=f'The year to build directories for. Defaults to {year}/{year+1}')
+    parser = argparse.ArgumentParser(
+        "build_md_directory",
+        description="Build a directory for a specified MD or District",
+    )
+    parser.add_argument(
+        "md_or_dist", help='The name of the MD or district to use, eg "410"'
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=year,
+        help=f"The year to build directories for. Defaults to {year}/{year+1}",
+    )
     args = parser.parse_args()
     import time
+
     start = time.clock()
     outputs = get_outputs(args.year, args.md_or_dist)
-    print(f'Get outputs: {(time.clock() - start):.3}')
+    print(f"Get outputs: {(time.clock() - start):.3}")
     outputs.build()
-    print(f'outputs built: {(time.clock() - start):.3}')
+    print(f"outputs built: {(time.clock() - start):.3}")
+
