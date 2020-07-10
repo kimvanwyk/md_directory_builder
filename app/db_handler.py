@@ -237,7 +237,7 @@ class DBHandler(object):
             (21, -1, operator.eq, "ID"),
             (11, 0, operator.eq, "CC"),
             (5, 0, operator.eq, "DG"),
-            (11, -1, operator.le, "IPCC"),
+            (11, -1, operator.eq, "IPCC"),
             (11, -2, operator.le, "PCC"),
             (13, 0, operator.eq, "CCE"),
             (5, -1, operator.eq, "IPDG"),

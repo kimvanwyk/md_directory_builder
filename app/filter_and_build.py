@@ -55,27 +55,17 @@ def build_pdf(file_in, title, compiled, template=TEMPLATE, image=IMAGE_NAME):
     with open(tex_file_mod, "w") as fh:
         fh.write(text)
 
-    client.containers.run(
-        IMAGE_NAME,
-        command=f"{tex_file_mod}",
-        entrypoint="pdflatex",
-        volumes=volumes,
-        auto_remove=True,
-        stdin_open=True,
-        stream=True,
-        tty=False,
-    )
-
-    client.containers.run(
-        IMAGE_NAME,
-        command=f"{tex_file_mod}",
-        entrypoint="pdflatex",
-        volumes=volumes,
-        auto_remove=True,
-        stdin_open=True,
-        stream=True,
-        tty=False,
-    )
+    for _ in range(3):
+        client.containers.run(
+            IMAGE_NAME,
+            command=f"{tex_file_mod}",
+            entrypoint="pdflatex",
+            volumes=volumes,
+            auto_remove=True,
+            stdin_open=True,
+            stream=True,
+            tty=False,
+        )
 
 
 if __name__ == "__main__":
