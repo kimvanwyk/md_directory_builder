@@ -1,0 +1,14 @@
+{
+    "python.pythonPath": ".venv/bin/python3",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Path": "${workspaceRoot}/.venv/bin/flake8",
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": ["--max-line-length=90"],
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "${workspaceRoot}/.venv/bin/black",
+    "python.formatting.blackArgs": ["--line-length=90", "--skip-numeric-underscore-normalization"],
+    "editor.formatOnSave": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyPath": "${workspaceRoot}/.venv/bin/mypy",
+    "git.ignoreLimitWarning": true
+}

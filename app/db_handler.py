@@ -199,6 +199,11 @@ class DBHandler(object):
             s = self.get_struct(r.id)
             self.struct_ids[s.name] = r.id
 
+        self.clubs = {}
+        #  set to an empty dir as club lookup uses club attr as a lookup
+        self.clubs = self.get_clubs()
+        self.members = self.get_members()
+
     # #@profile(immediate=False, filename="profile_results")
     def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field="id"):
         t = self.tables[table]
@@ -326,13 +331,22 @@ class DBHandler(object):
         exclude=("club_id",),
         email=None,
     ):
-        (map, res) = self.__db_lookup(member_id, "member", mapping, exclude)
-        if res["club_id"]:
-            map["club"] = self.get_club(res["club_id"])
-        map["title"] = self.get_title(member_id)
+        title = self.get_title(member_id)
+        m = self.members.get(member_id)
+        if not m:
+            (map, res) = self.__db_lookup(member_id, "member", mapping, exclude)
+            if res["club_id"]:
+                map["club"] = self.clubs.get(
+                    res["club_id"], self.get_club(res["club_id"])
+                )
+            map["title"] = title
+            if email:
+                map["email"] = email
+            return Member(**map)
+        m.title = title
         if email:
-            map["email"] = email
-        return Member(**map)
+            m.email = email
+        return m
 
     def get_members(
         self,
@@ -345,16 +359,16 @@ class DBHandler(object):
         tm = self.tables["member"]
         res = self.conn.execute(tm.select()).fetchall()
         exclude = ("club_id",)
-        members = []
+        members = {}
         for r in res:
             map = {}
             for (k, v) in list(r.items()):
                 if k not in exclude:
                     map[mapping.get(k, k)] = bool(v) if "_b" in k else v
             if r["club_id"]:
-                map["club"] = self.get_club(r["club_id"])
+                map["club"] = self.clubs.get(r["club_id"], self.get_club(r["club_id"]))
             # map["title"] = self.get_title(r.id)
-            members.append(Member(**map))
+            members[r["id"]] = Member(**map)
         return members
 
     # @profile(immediate=False, filename="profile_results")
@@ -399,26 +413,37 @@ class DBHandler(object):
         },
         include_officers=False,
     ):
-        (map, res) = self.__db_lookup(club_id, "club", mapping, exclude)
-        if not res:
-            return None
-        map["meeting_address"] = [
-            res["add%s" % i] for i in range(1, 6) if res["add%s" % i]
-        ]
-        map["postal_address"] = [
-            res["postal%s" % i] for i in range(1, 6) if res["postal%s" % i]
-        ]
-        if res["po_code"]:
-            map["postal_address"].append(res["po_code"])
-        map["club_type"] = club_type_mapping[res["type"]]
+        c = self.clubs.get(club_id)
+        if not c:
+            (map, res) = self.__db_lookup(club_id, "club", mapping, exclude)
+            if not res:
+                return None
+            map["meeting_address"] = [
+                res["add%s" % i] for i in range(1, 6) if res["add%s" % i]
+            ]
+            map["postal_address"] = [
+                res["postal%s" % i] for i in range(1, 6) if res["postal%s" % i]
+            ]
+            if res["po_code"]:
+                map["postal_address"].append(res["po_code"])
+            map["club_type"] = club_type_mapping[res["type"]]
 
-        if res["parent_id"]:
-            map["parent"] = self.get_club(res["parent_id"], include_officers=False)
+            if res["parent_id"]:
+                map["parent"] = self.get_club(res["parent_id"], include_officers=False)
+
+            t = self.tables["clubzone"]
+            res = self.conn.execute(
+                t.select(and_(t.c.club_id == club_id, t.c.year == self.year))
+            ).fetchone()
+            if res:
+                map["zone"] = self.get_zone(res.zone_id, include_officers=False)
+
+            c = Club(**map)
+
         if include_officers:
             ts = self.tables["clubofficer"]
             te = self.tables["clubofficer_email"]
-            map["officers"] = []
-            for office_id_index in office_ids[map["club_type"]]:
+            for office_id_index in office_ids[c.club_type]:
                 (title, office_id, year) = self.officer_titles[office_id_index]
                 res = self.conn.execute(
                     ts.select(
@@ -438,18 +463,23 @@ class DBHandler(object):
                     ).fetchone()
                     if email_res:
                         email = email_res.email
-                    map["officers"].append(
+                    c.officers.append(
                         Officer(title, self.get_member(res.member_id, email=email))
                     )
 
-        t = self.tables["clubzone"]
-        res = self.conn.execute(
-            t.select(and_(t.c.club_id == club_id, t.c.year == self.year))
-        ).fetchone()
-        if res:
-            map["zone"] = self.get_zone(res.zone_id, include_officers=include_officers)
+            t = self.tables["clubzone"]
+            res = self.conn.execute(
+                t.select(and_(t.c.club_id == club_id, t.c.year == self.year))
+            ).fetchone()
+            if res:
+                c.zone = self.get_zone(res.zone_id, include_officers=False)
 
-        return Club(**map)
+        return c
+
+    def get_clubs(self):
+        tc = self.tables["club"]
+        res = self.conn.execute(select([tc.c.id], tc.c.closed_b == False)).fetchall()
+        return {r.id: self.get_club(r.id) for r in res}
 
     # @profile(immediate=False, filename="profile_results")
     def get_region(self, region_id, exclude=("struct_id",), include_officers=False):

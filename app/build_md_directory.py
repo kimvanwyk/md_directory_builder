@@ -187,30 +187,24 @@ class Output(object):
                 year = f"{title}: {club.charter_year}. "
             else:
                 year = ""
-            if club.zone:
-                s = f"{year}Part of {club.zone.long_name}."
-            else:
-                s = year
+            s = f"{year}Part of {club.zone.long_name}." if club.zone else year
             if club.id > 0:
                 s = f"{s} Club Number: {club.id}."
             if s:
                 self.out.append(s)
             officers = []
             for off in club.officers:
-                if "membership chair" not in off.title.lower():
-                    if off.member:
-                        l = [
-                            off.title.replace("Club ", "").replace(
-                                "Chairperson", "Chair"
-                            ),
-                            "--",
-                        ]
-                        l.extend(
-                            self.get_member_rows(
-                                off.member, trail=False, include_homeclub=False
-                            )
+                if "membership chair" not in off.title.lower() and off.member:
+                    l = [
+                        off.title.replace("Club ", "").replace("Chairperson", "Chair"),
+                        "--",
+                    ]
+                    l.extend(
+                        self.get_member_rows(
+                            off.member, trail=False, include_homeclub=False
                         )
-                        officers.append(l)
+                    )
+                    officers.append(l)
             self.blank()
             if officers:
                 n += 1
