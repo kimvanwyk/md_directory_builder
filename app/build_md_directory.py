@@ -160,7 +160,7 @@ class Output(object):
         if member.cell_ph:
             out.append(f"**Cell:** {member.cell_ph}{t}")
         if member.email:
-            out.append(f"**Email:** <{member.email}>{t}")
+            out.append(f"<{member.email}>{t}")
         if include_homeclub and member.club:
             out.append(f"**Home Club:** {member.club.name}{t}")
         return out
