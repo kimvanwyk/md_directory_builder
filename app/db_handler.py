@@ -198,8 +198,8 @@ class DBHandler(object):
 
         self.clubs = {}
         #  set to an empty dir as club lookup uses club attr as a lookup
-        self.clubs = self.get_clubs()
-        self.members = self.get_members()
+        # self.clubs = self.get_clubs()
+        # self.members = self.get_members()
 
     def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field="id"):
         t = self.tables[table]
@@ -224,6 +224,103 @@ class DBHandler(object):
         k = list(self.struct_ids.keys())
         k.sort()
         return k
+
+    def get_titles(
+        self,
+        struct_officers=(
+            (19, 0, operator.eq, "IP"),
+            (19, -1, operator.eq, "PIP"),
+            (21, 0, operator.eq, "ID"),
+            (21, -1, operator.eq, "ID"),
+            (11, 0, operator.eq, "CC"),
+            (5, 0, operator.eq, "DG"),
+            (11, -1, operator.eq, "IPCC"),
+            (11, -2, operator.le, "PCC"),
+            (13, 0, operator.eq, "CCE"),
+            (5, -1, operator.eq, "IPDG"),
+            (7, 0, operator.eq, "1VDG"),
+            (8, 0, operator.eq, "2VDG"),
+            (5, -2, operator.le, "PDG"),
+            (14, 0, operator.eq, "CS"),
+            (15, 0, operator.eq, "CT"),
+            (9, 0, operator.eq, "DCS"),
+            (10, 0, operator.eq, "DCT"),
+        ),
+        club_officers=(
+            (1, 0, operator.eq, "LP"),
+            (2, 0, operator.eq, "LS"),
+            (3, 0, operator.eq, "LT"),
+            (1, -1, operator.le, "PLP"),
+        ),
+    ):
+        """ Return a title for the supplied member_id, or None
+        if none found
+        """
+
+        n = 0
+        titles = {}
+        t = self.tables['structofficer']
+        res = self.conn.execute(t.select()).fetchall()
+        for r in res:
+            if r.member_id not in titles:
+                for (office_id, year_mod, year_op, title) in struct_officers:
+                    if (r.office_id == office_id) and (year_op(r.year, self.year + year_mod)):
+                        titles[r.member_id] = title
+                        break
+        print(list(titles.items())[:15])
+
+        # def search_officers(member_id, table, mapping):
+        #     title = None
+        #     t = self.tables[table]
+        #     res = self.conn.execute(t.select(t.c.member_id == member_id)).fetchall()
+        #     index = 100
+        #     for (n, (office_id, addition, op, ttl)) in enumerate(mapping):
+        #         for r in res:
+        #             if all(
+        #                 (
+        #                     (office_id == r.office_id),
+        #                     (op(r.year, self.year + addition)),
+        #                     (n < index),
+        #                 )
+        #             ):
+        #                 index = n
+        #                 title = ttl
+        #                 break
+        #     return title
+
+        # title = search_officers(member_id, "structofficer", struct_officers)
+        # if not title:
+        #     for (table, ttl) in (("regionchair", "RC"), ("zonechair", "ZC")):
+        #         t = self.tables[table]
+        #         res = self.conn.execute(
+        #             t.select(and_(t.c.member_id == member_id, t.c.year == self.year))
+        #         ).fetchall()
+        #         if res:
+        #             title = ttl
+        #             break
+        # if not title:
+        #     for (type_id, ttl) in ((1, "MDC"), (0, "DC")):
+        #         t = self.tables["struct"]
+        #         structs = self.conn.execute(t.select(t.c.type_id == type_id)).fetchall()
+        #         t = self.tables["structchair"]
+        #         for struct in structs:
+        #             res = self.conn.execute(
+        #                 t.select(
+        #                     and_(
+        #                         t.c.member_id == member_id,
+        #                         t.c.year == self.year,
+        #                         t.c.struct_id == struct.id,
+        #                     )
+        #                 )
+        #             ).fetchall()
+        #             if res:
+        #                 title = ttl
+        #                 break
+        #         if title:
+        #             break
+        # if not title:
+        #     title = search_officers(member_id, "clubofficer", club_officers)
+        # return title
 
     def get_title(
         self,
@@ -854,3 +951,6 @@ def get_data_object_from_db(
 ):
     db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec), year=year)
     return Data(year, struct_name, db)
+
+db = DBHandler(**get_db_settings("db_settings.ini", "DB"), year=2020)
+print(db.get_titles())
