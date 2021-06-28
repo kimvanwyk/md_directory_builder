@@ -77,8 +77,7 @@ $compiled$\\
 
 For additions or corrections to this directory, contact:
 \begin{itemize}
-\item Denis Meyer, MDC Information Technology, \href{mailto:denis@sheppielions.co.za}{denis@sheppielions.co.za}
-\item Kim van Wyk, Directory Compiler, \href{mailto:vanwykk@gmail.com}{vanwykk@gmail.com}
+\item Kim van Wyk, MDC Information Technology, \href{mailto:vanwykk@gmail.com}{vanwykk@gmail.com}
 \end{itemize}
 \end{titlepage}
 $if(toc)$
