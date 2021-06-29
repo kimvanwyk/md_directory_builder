@@ -464,9 +464,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     import time
 
-    start = time.clock()
     outputs = get_outputs(args.year, args.md_or_dist)
-    print(f"Get outputs: {(time.clock() - start):.3}")
+    print(f"Get outputs: {time.process_time():.3}")
     outputs.build()
-    print(f"outputs built: {(time.clock() - start):.3}")
+    print(f"outputs built: {time.process_time():.3}")
 
