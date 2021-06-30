@@ -201,7 +201,6 @@ class DBHandler(object):
         #  set to an empty dir as club lookup uses club attr as a lookup
         self.clubs = self.get_clubs()
         self.members = self.get_members()
-        print(self.members[2347569])
 
 
     def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field="id"):
@@ -337,9 +336,6 @@ class DBHandler(object):
             if email:
                 map["email"] = email
             return Member(**map)
-        # if member_id == 2347569:
-        #     print(m)
-        #     print("email:", m.email, email)
         m.title = title
         if email:
             m.email = email
@@ -451,8 +447,6 @@ class DBHandler(object):
                     )
                 ).fetchone()
                 if res:
-                    if c.id == 61204 and office_id_index == 3:
-                        print("res.email:", res.email)
                     email = res.email
                     email_res = self.conn.execute(
                         te.select(
