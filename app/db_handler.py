@@ -392,7 +392,7 @@ class DBHandler(object):
             "zone_id",
         ),
         office_ids={
-            ClubType.lions: (1, 2, 3, 4),
+            ClubType.lions: (1, 2, 3, 4, 22),
             ClubType.branch: (16, 1, 2, 3),
             ClubType.lioness: (16, 1, 2, 3),
             ClubType.leos: (20, 1, 2, 3),
