@@ -331,6 +331,55 @@ class Output(object):
         )
         self.out.append("")
 
+    def output_district_office(self, distoffice):
+        self.out.append("## District Office")
+        self.out.append("")
+        self.out.append("|||")
+        self.out.append("|----:|:----|")
+        self.__output_aligned_left_column_row(
+            "Contact Person:", distoffice.contact_person, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+        )
+        if distoffice.physical_address:
+            self.__output_aligned_left_column_row(
+                "Physical Address:",
+                distoffice.physical_address[0],
+                "r",
+                BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
+            )
+            for pa in distoffice.physical_address[1:]:
+                self.__output_aligned_left_column_row(
+                    "", pa, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+                )
+        if distoffice.postal_address:
+            self.__output_aligned_left_column_row(
+                "Postal Address:",
+                distoffice.postal_address[0],
+                "r",
+                BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
+            )
+            for pa in distoffice.postal_address[1:]:
+                self.__output_aligned_left_column_row(
+                    "", pa, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+                )
+        if distoffice.ph:
+            self.__output_aligned_left_column_row(
+                "Telephone:", distoffice.ph, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
+        if distoffice.email:
+            self.__output_aligned_left_column_row(
+                "Email:", f"<{distoffice.email}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
+        if distoffice.hours:
+            print(distoffice.hours)
+            self.__output_aligned_left_column_row(
+                "Hours:", distoffice.hours, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
+        if distoffice.website:
+            self.__output_aligned_left_column_row(
+                "Website:", f"<{distoffice.website}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            )
+        self.out.append("")
+
 
 def get_outputs(year, struct_name):
     data = db_handler.get_data_object_from_db(year, struct_name)
@@ -374,7 +423,9 @@ def get_outputs(year, struct_name):
 
         if data.district.website:
             outputs.output_website(data.district.website)
-
+        distoffice = data.get_district_offices()
+        if distoffice:
+            outputs.output_district_office(distoffice)
         if data.regions:
             outputs.newpage()
             outputs.output_heading(2, "Regions")

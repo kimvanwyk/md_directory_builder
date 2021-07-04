@@ -44,6 +44,20 @@ class District(MultipleDistrict):
 
 
 @attr.s
+class DistrictOffice(object):
+    id = attr.ib(factory=int)
+    struct = attr.ib(default=None)
+    physical_address = attr.ib(factory=list)
+    postal_address = attr.ib(factory=list)
+    ph = attr.ib(default=None)
+    fax = attr.ib(default=None)
+    email = attr.ib(default=None)
+    website = attr.ib(default=None)
+    contact_person = attr.ib(default=None)
+    hours = attr.ib(default=None)
+    
+
+@attr.s
 class BrightsightOffice(object):
     id = attr.ib(factory=int)
     struct = attr.ib(default=None)
@@ -636,6 +650,42 @@ class DBHandler(object):
             ).fetchall()
         ]
 
+    def get_district_offices(
+        self,
+        struct_id,
+        mapping={"tel": "ph"},
+        exclude=(
+            "struct_id",
+            "add1",
+            "add2",
+            "add3",
+            "add4",
+            "add5",
+            "po_code",
+            "postal",
+            "postal1",
+            "postal2",
+            "postal3",
+            "postal4",
+            "postal5",
+        ),
+    ):
+        (map, res) = self.__db_lookup(
+            struct_id, "districtoffice", mapping, exclude, lookup_field="struct_id"
+        )
+        if not res:
+            return None
+        map["physical_address"] = [
+            res["add%s" % i] for i in range(1, 6) if res["add%s" % i]
+        ]
+        map["postal_address"] = [
+            res["postal%s" % i] for i in range(1, 6) if res["postal%s" % i]
+        ]
+        if res["po_code"]:
+            map["postal_address"].append(res["po_code"])
+        map["struct"] = self.get_struct(struct_id)
+        return DistrictOffice(**map)
+
     def get_district_clubs(self, struct_id, include_officers=False):
         return self.__get_district_child(
             struct_id,
@@ -809,6 +859,11 @@ class Data(object):
     def get_past_foreign_dgs(self):
         if self.district:
             return self.db.get_past_foreign_dgs(self.district.id)
+        return []
+
+    def get_district_offices(self):
+        if self.district:
+            return self.db.get_district_offices(self.district.id)
         return []
 
     def get_district_clubs(self, include_officers=True):
