@@ -125,7 +125,9 @@ class Output(object):
         self.__output_aligned_left_column_row(child_desc, chair_desc)
         self.out.append("|:----|:----|")
         for (child, cr) in itertools.zip_longest(
-            [getattr(c, "full_name", c.name) for c in children], chair_rows, fillvalue=""
+            [getattr(c, "full_name", c.name) for c in children],
+            chair_rows,
+            fillvalue="",
         ):
             # self.__output_aligned_left_column_row(child, cr)
             self.out.append(f"|{child}|{cr}|")
@@ -337,7 +339,10 @@ class Output(object):
         self.out.append("|||")
         self.out.append("|----:|:----|")
         self.__output_aligned_left_column_row(
-            "Contact Person:", distoffice.contact_person, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+            "Contact Person:",
+            distoffice.contact_person,
+            "r",
+            BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
         )
         if distoffice.physical_address:
             self.__output_aligned_left_column_row(
@@ -370,13 +375,15 @@ class Output(object):
                 "Email:", f"<{distoffice.email}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
             )
         if distoffice.hours:
-            print(distoffice.hours)
             self.__output_aligned_left_column_row(
                 "Hours:", distoffice.hours, "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
             )
         if distoffice.website:
             self.__output_aligned_left_column_row(
-                "Website:", f"<{distoffice.website}>", "r", BRIGHTSIGHT_LEFT_COLUMN_WIDTH
+                "Website:",
+                f"<{distoffice.website}>",
+                "r",
+                BRIGHTSIGHT_LEFT_COLUMN_WIDTH,
             )
         self.out.append("")
 
@@ -387,7 +394,9 @@ def get_outputs(year, struct_name):
     Output.dt = datetime.now()
     outputs = Outputs()
     if data.md:
-        outputs.add_output(Output(f"Multiple District {data.struct.name}", newpage=True))
+        outputs.add_output(
+            Output(f"Multiple District {data.struct.name}", newpage=True)
+        )
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
@@ -519,4 +528,3 @@ if __name__ == "__main__":
     print(f"Get outputs: {time.process_time():.3}")
     outputs.build()
     print(f"outputs built: {time.process_time():.3}")
-
