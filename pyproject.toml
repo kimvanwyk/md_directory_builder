@@ -15,9 +15,10 @@ autopep8 = "^1.4"
 chardet = "^3.0"
 mysqlclient = "^1.4"
 clipboard = "^0.0.4"
-pyside2 = "^5.15.0"
-PySimpleGuiQt = "^0.35.0"
+# pyside2 = "^5.15.0"
+# PySimpleGuiQt = "^0.35.0"
 mypy = "^0.782"
+pyperclip = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^18.3-alpha.0",allows-prereleases = true}

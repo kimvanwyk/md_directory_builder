@@ -55,7 +55,7 @@ class DistrictOffice(object):
     website = attr.ib(default=None)
     contact_person = attr.ib(default=None)
     hours = attr.ib(default=None)
-    
+
 
 @attr.s
 class BrightsightOffice(object):
@@ -107,6 +107,7 @@ class Club(object):
     postal_address = attr.ib(factory=list)
     charter_year = attr.ib(factory=int)
     website = attr.ib(default=None)
+    facebook = attr.ib(default=None)
     is_suspended = attr.ib(default=False)
     zone = attr.ib(default=None)
     is_closed = attr.ib(default=False)
@@ -216,7 +217,6 @@ class DBHandler(object):
         self.clubs = self.get_clubs()
         self.members = self.get_members()
 
-
     def __db_lookup(self, lookup_id, table, mapping, exclude=[], lookup_field="id"):
         t = self.tables[table]
         res = self.conn.execute(
@@ -270,7 +270,7 @@ class DBHandler(object):
             (1, -1, operator.le, "PLP"),
         ),
     ):
-        """ Return a title for the supplied member_id, or None
+        """Return a title for the supplied member_id, or None
         if none found
         """
 
@@ -342,7 +342,7 @@ class DBHandler(object):
         m = copy.copy(self.members.get(member_id))
         if not m:
             (map, res) = self.__db_lookup(member_id, "member", mapping, exclude)
-            if res["club_id"]:
+            if res and res["club_id"]:
                 map["club"] = self.clubs.get(
                     res["club_id"], self.get_club(res["club_id"])
                 )
@@ -706,7 +706,11 @@ class DBHandler(object):
 
     def get_district_zones(self, struct_id, include_officers=False):
         return self.__get_district_child(
-            struct_id, "zone", "id", self.get_zone, {"include_officers": include_officers}
+            struct_id,
+            "zone",
+            "id",
+            self.get_zone,
+            {"include_officers": include_officers},
         )
 
     def get_past_struct_officers(
@@ -887,7 +891,9 @@ class Data(object):
 
     def get_zone_clubs(self, include_officers=False):
         if self.zone:
-            return self.db.get_zone_clubs(self.zone.id, include_officers=include_officers)
+            return self.db.get_zone_clubs(
+                self.zone.id, include_officers=include_officers
+            )
         return []
 
 
@@ -901,7 +907,8 @@ def get_db_settings(fn="db_settings.ini", sec="DB"):
     return settings
 
 
-def get_struct_list():
+def get_struct_list(year, db_settings_fn="db_settings.ini", db_settings_sec="DB"):
+    db = DBHandler(**get_db_settings(db_settings_fn, db_settings_sec), year=year)
     return db.get_struct_list()
 
 
