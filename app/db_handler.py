@@ -5,7 +5,7 @@ from enum import Enum
 import operator
 
 import attr
-from sqlalchemy import create_engine, Table, MetaData, and_, select
+from sqlalchemy import create_engine, Table, MetaData, and_, select, text
 
 from utilities import get_current_year
 
@@ -179,7 +179,7 @@ class DBHandler(object):
         self.conn = engine.connect()
         tables = [
             t[0]
-            for t in self.conn.execute("SHOW TABLES").fetchall()
+            for t in self.conn.execute(text("SHOW TABLES")).fetchall()
             if TABLE_PREFIX in t[0]
         ]
         self.tables = {}
