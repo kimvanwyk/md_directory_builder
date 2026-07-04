@@ -45,7 +45,7 @@ def insert_rows(rows, year):
 
 def find_missing_members(csv_file, year):
     data = db_handler.get_data_object_from_db(year, "410")
-    members = {d.id: d for d in data.db.get_members()}
+    members = data.db.get_members()
     with open(csv_file, "r") as fh:
         reader = csv.DictReader(fh)
         seen = []
@@ -68,9 +68,27 @@ def find_missing_members(csv_file, year):
     pyperclip.copy("\n".join(out))
 
 
-rows = extract_rows("2020_input_data/e_mylci_datadownload_20200605_071830.csv", 2020)
-print(rows[:10])
-print(rows[-10:])
-insert_rows(rows, 2020)
+def find_missing_clubs(csv_file, year):
+    data = db_handler.get_data_object_from_db(year, "410")
+    clubs = data.db.get_clubs()
+    with open(csv_file, "r") as fh:
+        reader = csv.DictReader(fh)
+        seen = []
+        for row in reader:
+            c_id = int(row["Club ID"])
+            if c_id not in clubs and c_id not in seen:
+                seen.append(c_id)
+                print(f"{c_id} {row['Club Name']}")
 
-# find_missing_members("2020_input_data/e_mylci_datadownload_20200605_071830.csv", 2020)
+
+FN = "/home/kimv/src/md_directory/data/2023/mylci_datadownload_20230624_081613.csv"
+rows = extract_rows(FN, 2023)
+if 1:
+    print(rows[:10])
+    print(rows[-10:])
+    insert_rows(rows, 2023)
+if 0:
+    sql = find_missing_members(FN, 2023)
+    print(sql)
+if 0:
+    find_missing_clubs(FN, 2023)

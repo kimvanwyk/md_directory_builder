@@ -89,9 +89,13 @@ class Region(object):
 @attr.s
 class Zone(Region):
     region = attr.ib(default=None)
+    use_zone_b = attr.ib(default=True)
 
     def __attrs_post_init__(self):
-        self.long_name = f"{self.name}, {self.region.name}"
+        if self.region:
+            self.long_name = f"{self.name}, {self.region.name}"
+        else:
+            self.long_name = self.name
 
 
 @attr.s
@@ -224,7 +228,7 @@ class DBHandler(object):
         ).fetchone()
         map = {}
         if res:
-            for (k, v) in list(res.items()):
+            for k, v in list(res.items()):
                 if k not in exclude:
                     map[mapping.get(k, k)] = bool(v) if "_b" in k else v
         return (map, res)
@@ -279,7 +283,7 @@ class DBHandler(object):
             t = self.tables[table]
             res = self.conn.execute(t.select(t.c.member_id == member_id)).fetchall()
             index = 100
-            for (n, (office_id, addition, op, ttl)) in enumerate(mapping):
+            for n, (office_id, addition, op, ttl) in enumerate(mapping):
                 for r in res:
                     if all(
                         (
@@ -295,7 +299,7 @@ class DBHandler(object):
 
         title = search_officers(member_id, "structofficer", struct_officers)
         if not title:
-            for (table, ttl) in (("regionchair", "RC"), ("zonechair", "ZC")):
+            for table, ttl in (("regionchair", "RC"), ("zonechair", "ZC")):
                 t = self.tables[table]
                 res = self.conn.execute(
                     t.select(and_(t.c.member_id == member_id, t.c.year == self.year))
@@ -304,7 +308,7 @@ class DBHandler(object):
                     title = ttl
                     break
         if not title:
-            for (type_id, ttl) in ((1, "MDC"), (0, "DC")):
+            for type_id, ttl in ((1, "MDC"), (0, "DC")):
                 t = self.tables["struct"]
                 structs = self.conn.execute(t.select(t.c.type_id == type_id)).fetchall()
                 t = self.tables["structchair"]
@@ -369,7 +373,7 @@ class DBHandler(object):
         members = {}
         for r in res:
             map = {}
-            for (k, v) in list(r.items()):
+            for k, v in list(r.items()):
                 if k not in exclude:
                     map[mapping.get(k, k)] = bool(v) if "_b" in k else v
             if r["club_id"]:
@@ -830,11 +834,15 @@ class Data(object):
 
     def next_zone(self):
         if self.district:
-            self.__zone_index += 1
-            if self.__zone_index >= len(self.zones):
-                self.zone = False
-                return False
-            self.zone = self.zones[self.__zone_index]
+            while True:
+                self.__zone_index += 1
+                if self.__zone_index >= len(self.zones):
+                    self.zone = False
+                    return False
+                self.zone = self.zones[self.__zone_index]
+                if self.zone.use_zone_b:
+                    break
+
         return True
 
     def reset(self):

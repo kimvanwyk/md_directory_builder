@@ -71,7 +71,6 @@ class Outputs(object):
 
 
 class Output(object):
-
     year = None
     dt = None
 
@@ -124,7 +123,7 @@ class Output(object):
             chair_rows = self.get_member_rows(chair, trail=False)
         self.__output_aligned_left_column_row(child_desc, chair_desc)
         self.out.append("|:----|:----|")
-        for (child, cr) in itertools.zip_longest(
+        for child, cr in itertools.zip_longest(
             [getattr(c, "full_name", c.name) for c in children],
             chair_rows,
             fillvalue="",
@@ -156,14 +155,11 @@ class Output(object):
         if member.is_deceased:
             out.append(f"**Called to Higher Service**{t}")
             return out
-        if member.is_resigned:
-            out.append(f"**Resigned**{t}")
-            return out
         if member.cell_ph:
             out.append(f"**Cell:** {member.cell_ph}{t}")
         if member.email:
             out.append(f"<{member.email}>{t}")
-        if include_homeclub and member.club:
+        if include_homeclub and member.club and not member.is_resigned:
             out.append(f"**Home Club:** {member.club.name}{t}")
         return out
 
@@ -400,7 +396,7 @@ def get_outputs(year, struct_name):
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
         outputs.start_multicols()
-        for (n, off) in enumerate(get_md_officers(data), 1):
+        for n, off in enumerate(get_md_officers(data), 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
                 outputs.columnbreak()
@@ -424,7 +420,7 @@ def get_outputs(year, struct_name):
         outputs.output_struct_preamble(data.district)
         outputs.output_heading(2, "District Cabinet")
         outputs.start_multicols()
-        for (n, off) in enumerate(data.district.officers, 1):
+        for n, off in enumerate(data.district.officers, 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
                 outputs.columnbreak()
