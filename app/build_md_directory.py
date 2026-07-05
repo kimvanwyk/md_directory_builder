@@ -393,12 +393,10 @@ def get_outputs(year, struct_name):
         )
         outputs.output_struct_preamble(data.struct)
         outputs.output_heading(2, "Multiple District Council")
-        outputs.start_multicols()
         for n, off in enumerate(get_md_officers(data), 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
-                outputs.columnbreak()
-        outputs.end_multicols()
+                outputs.newpage()
         outputs.output_website(data.struct.website)
         bso = data.get_brightsight_offices()
         if bso:
@@ -417,12 +415,10 @@ def get_outputs(year, struct_name):
         outputs.add_output(Output(f"District {data.district.name}", newpage=True))
         outputs.output_struct_preamble(data.district)
         outputs.output_heading(2, "District Cabinet")
-        outputs.start_multicols()
         for n, off in enumerate(data.district.officers, 1):
             outputs.output_officer(off)
             if n and not (n % MAX_PER_PAGE_OFFICERS):
-                outputs.columnbreak()
-        outputs.end_multicols()
+                outputs.newpage()
 
         if data.district.website:
             outputs.output_website(data.district.website)
