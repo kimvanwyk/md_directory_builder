@@ -16,8 +16,10 @@ TABLE_PREFIX = "md_directory"
 class ClubType(Enum):
     lions = 1
     branch = 2
-    leos = 3
-    lioness = 4
+    lioness = 3
+    alpha_leos = 4
+    omega_leos = 5
+    leo_lions = 6
 
 
 @attr.s
@@ -119,8 +121,8 @@ class Club(object):
 
     def __attrs_post_init__(self):
         self.full_name = self.name
-        if self.club_type.value > 1:
-            self.full_name = f"{self.name} ({self.club_type.name.capitalize()} club of {self.parent.name})"
+        if self.club_type.value not in (1, 6):
+            self.full_name = f"{self.name} ({' '.join([p.capitalize() for p in self.club_type.name.split('_')])} club of {self.parent.name})"
 
 
 @attr.s
@@ -413,13 +415,17 @@ class DBHandler(object):
             ClubType.lions: (1, 2, 3, 4, 22),
             ClubType.branch: (16, 1, 2, 3),
             ClubType.lioness: (16, 1, 2, 3),
-            ClubType.leos: (20, 1, 2, 3),
+            ClubType.alpha_leos: (20, 1, 2, 3),
+            ClubType.omega_leos: (20, 1, 2, 3),
+            ClubType.leo_lions: (1, 2, 3, 4, 22),
         },
         club_type_mapping={
             0: ClubType.lions,
             1: ClubType.branch,
             2: ClubType.lioness,
-            3: ClubType.leos,
+            3: ClubType.alpha_leos,
+            4: ClubType.omega_leos,
+            5: ClubType.leo_lions,
         },
         include_officers=False,
     ):

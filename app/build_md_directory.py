@@ -172,15 +172,13 @@ class Output(object):
         if club.name:
             n += 1
             name = club.name
-            if club.club_type != db_handler.ClubType.lions:
+            if "lions" not in (club.club_type.name):
                 parent = f"Club of {club.parent.name}" if club.parent else ""
-                name = f"{name} ({club.club_type.name.capitalize()} {parent})"
+                name = f"{name} ({' '.join([p.capitalize() for p in club.club_type.name.split('_')])} {parent})"
             self.output_heading(3, name)
             if club.charter_year:
                 title = (
-                    "Chartered"
-                    if club.club_type == db_handler.ClubType.lions
-                    else "Established"
+                    "Chartered" if "lions" in (club.club_type.name) else "Established"
                 )
                 year = f"{title}: {club.charter_year}. "
             else:
